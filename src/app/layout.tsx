@@ -13,6 +13,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import QueryProvider from "@/components/providers/QueryProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,9 +29,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
+        <script src="https://js.paystack.co/v1/inline.js" async></script>
       </head>
       <body style={{ backgroundColor: "#080C14", margin: 0 }}>
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

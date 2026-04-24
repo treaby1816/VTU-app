@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  outputFileTracing: false,
 };
 
 export default nextConfig;

@@ -6,12 +6,34 @@
 
 html { scroll-behavior: smooth; }
 
+:root {
+  --bg: #080C14;
+  --bg-card: #0D1426;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: rgba(255,255,255,0.06);
+  --primary: #00D4AA;
+  --primary-hover: #00b896;
+  --accent: #F59E0B;
+}
+
+[data-theme='light'] {
+  --bg: #f8fafc;
+  --bg-card: #ffffff;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: rgba(0,0,0,0.06);
+  --primary: #00A888;
+  --primary-hover: #008f74;
+}
+
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #080C14;
-  color: #e2e8f0;
+  background: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Custom scrollbar */
@@ -22,8 +44,8 @@ body {
 
 /* Remove input number arrows */
 input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-input[type=number] { -moz-appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 /* Tap highlight on mobile */
 * { -webkit-tap-highlight-color: transparent; }
@@ -32,3 +54,25 @@ input[type=number] { -moz-appearance: textfield; }
 @media (max-width: 768px) {
   input, select, textarea { font-size: 16px !important; }
 }
+
+/* Animations */
+@keyframes fadeUp      { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes bounceIn    { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+@keyframes toastSlide  { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes spin        { to{transform:rotate(360deg)} }
+@keyframes shimmer     { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes glowPulse   { 0%,100%{opacity:.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
+
+@keyframes zoomSlow    { from{transform:scale(1)} to{transform:scale(1.1)} }
+
+.fade-up    { animation: fadeUp .5s ease forwards; }
+.bounce-in  { animation: bounceIn .4s cubic-bezier(.34,1.56,.64,1) forwards; }
+.toast-slide{ animation: toastSlide .4s cubic-bezier(.34,1.56,.64,1) forwards; }
+.spin       { animation: spin 1s linear infinite; }
+.zoom-slow  { animation: zoomSlow 10s linear infinite alternate; }
+.shimmer-bg { background:linear-gradient(90deg,#0D1426 25%,#1a2540 50%,#0D1426 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+.glass      { background:rgba(13,20,38,.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.06); }
+.tx-row     { transition:background .15s; }
+.tx-row:hover{ background:rgba(255,255,255,.03); }
+.inp        { transition:border-color .2s,box-shadow .2s; }
+.inp:focus  { border-color:#00D4AA!important; box-shadow:0 0 0 3px rgba(0,212,170,.15); outline:none; }

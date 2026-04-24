@@ -3,12 +3,14 @@ import { verifyPaystackSignature } from "@/lib/paystack";
 import { createClient } from "@supabase/supabase-js";
 
 // Server-side Supabase client with service role (bypasses RLS for webhooks)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Client will be initialized inside the handler to prevent build errors
 
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   try {
     const rawBody = await req.text();
     const signature = req.headers.get("x-paystack-signature") ?? "";

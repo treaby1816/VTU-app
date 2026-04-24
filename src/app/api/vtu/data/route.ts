@@ -3,10 +3,7 @@ import { purchaseData, VTUNetwork } from "@/lib/vtu";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Client will be initialized inside the handler to prevent build errors
 
 const DataSchema = z.object({
   user_id:  z.string().uuid(),
@@ -18,6 +15,11 @@ const DataSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   try {
     const body = await req.json();
 
