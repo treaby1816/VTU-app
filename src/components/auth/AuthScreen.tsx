@@ -11,9 +11,9 @@ const BRAND = "VaultPay";
 // Temporary InputField component (will be moved to UI folder later)
 const InputField = React.memo(({ label, type = "text", placeholder, value, onChange, icon, error, suffix }: any) => (
   <div>
-    <label style={{ display: "block", color: "#94a3b8", fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{label}</label>
+    <label style={{ display: "block", color: "var(--text-muted)", fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{label}</label>
     <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-      {icon && <span style={{ position: "absolute", left: 13, color: "#64748b" }}>{icon}</span>}
+      {icon && <span style={{ position: "absolute", left: 13, color: "var(--text-muted)" }}>{icon}</span>}
       <input 
         type={type} 
         placeholder={placeholder} 
@@ -21,9 +21,9 @@ const InputField = React.memo(({ label, type = "text", placeholder, value, onCha
         onChange={(e: any) => onChange(e.target.value)} 
         className="inp" 
         style={{
-          width: "100%", background: "#080C14", border: `1px solid ${error ? "#ff444450" : "#1E2D4A"}`,
+          width: "100%", background: "var(--bg)", border: `1px solid ${error ? "#ff444450" : "var(--border)"}`,
           borderRadius: 10, padding: `12px ${suffix ? "42px" : "14px"} 12px ${icon ? "38px" : "14px"}`,
-          color: "#e2e8f0", fontSize: 14, outline: "none"
+          color: "var(--text)", fontSize: 14, outline: "none"
         }} 
       />
       {suffix && <span style={{ position: "absolute", right: 13 }}>{suffix}</span>}
@@ -59,7 +59,6 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
 
     try {
       if (mode === "register") {
-        // Sign up with Supabase
         const { data, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
@@ -77,7 +76,6 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
           setAuthError("Registration successful! Please check your email to verify your account.");
         }
       } else {
-        // Sign in with Supabase
         const { error } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
@@ -97,29 +95,29 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#080C14", display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "16px" : "20px", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "16px" : "20px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(0,212,170,.06) 0%,transparent 70%)", top: -200, right: -200, pointerEvents: "none" }} />
       <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(245,158,11,.04) 0%,transparent 70%)", bottom: -200, left: -200, pointerEvents: "none" }} />
       
       <div className="fade-up" style={{ width: "100%", maxWidth: 440, zIndex: 10 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,#00D4AA,#00a888)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(0,212,170,.3)" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(0,212,170,.3)" }}>
               <Zap size={22} color="#fff" fill="#fff" />
             </div>
-            <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 26, color: "#fff", letterSpacing: "-.5px" }}>{BRAND}</span>
+            <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 26, color: "var(--text)", letterSpacing: "-.5px" }}>{BRAND}</span>
           </div>
-          <p style={{ color: "#64748b", fontSize: 13 }}>Nigeria's fastest VTU platform</p>
-          <button onClick={() => setMode("welcome")} style={{ background: "none", border: "none", color: "#00D4AA", fontSize: 12, fontWeight: 600, marginTop: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, width: "100%" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Nigeria's fastest VTU platform</p>
+          <button onClick={() => setMode("welcome")} style={{ background: "none", border: "none", color: "var(--primary)", fontSize: 12, fontWeight: 600, marginTop: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, width: "100%" }}>
             ← Back to Welcome
           </button>
         </div>
 
-        <div style={{ background: "#0D1426", borderRadius: 20, padding: isMobile ? "20px" : "28px", border: "1px solid rgba(255,255,255,.06)", boxShadow: "0 24px 60px rgba(0,0,0,.5)" }}>
+        <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: isMobile ? "20px" : "28px", border: "1px solid var(--border)", boxShadow: "0 24px 60px rgba(0,0,0,.15)" }}>
           
-          <div style={{ display: "flex", background: "#080C14", borderRadius: 10, padding: 4, marginBottom: 24, gap: 4 }}>
+          <div style={{ display: "flex", background: "var(--bg)", borderRadius: 10, padding: 4, marginBottom: 24, gap: 4 }}>
             {(["login", "register"] as const).map(m => (
-              <button key={m} onClick={() => { setMode(m); setErrors({}); setAuthError(null); }} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 13, background: mode === m ? "#00D4AA" : "transparent", color: mode === m ? "#000" : "#64748b", transition: "all .2s" }}>
+              <button key={m} onClick={() => { setMode(m); setErrors({}); setAuthError(null); }} style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 13, background: mode === m ? "var(--primary)" : "transparent", color: mode === m ? "#fff" : "var(--text-muted)", transition: "all .2s" }}>
                 {m === "login" ? "Sign In" : "Sign Up"}
               </button>
             ))}
@@ -140,7 +138,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
             )}
             <InputField label="Email Address" type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} icon={<Globe size={15} />} error={errors.email} />
             <InputField label="Password" type={showPass ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={set("password")} icon={<Lock size={15} />} error={errors.password} suffix={
-              <button onClick={() => setShowPass(!showPass)} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b", display: "flex" }}>
+              <button onClick={() => setShowPass(!showPass)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex" }}>
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             } />
@@ -148,16 +146,16 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
 
           {mode === "login" && (
             <div style={{ textAlign: "right", marginTop: 8 }}>
-              <span style={{ color: "#00D4AA", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>Forgot password?</span>
+              <span style={{ color: "var(--primary)", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>Forgot password?</span>
             </div>
           )}
 
-          <button onClick={handleSubmit} disabled={loading} className="btn-p" style={{ width: "100%", padding: "14px 0", marginTop: 22, borderRadius: 12, border: "none", cursor: loading ? "not-allowed" : "pointer", background: loading ? "#1E2D4A" : "linear-gradient(135deg,#00D4AA,#00b896)", color: loading ? "#64748b" : "#000", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            {loading ? <div className="spin" style={{ width: 20, height: 20, border: "2px solid #64748b", borderTopColor: "#00D4AA", borderRadius: "50%" }} /> : mode === "login" ? "Sign In →" : "Create Account →"}
+          <button onClick={handleSubmit} disabled={loading} className="btn-p" style={{ width: "100%", padding: "14px 0", marginTop: 22, borderRadius: 12, border: "none", cursor: loading ? "not-allowed" : "pointer", background: loading ? "var(--border)" : "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#fff", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            {loading ? <div className="spin" style={{ width: 20, height: 20, border: "2px solid rgba(255,255,255,.3)", borderTopColor: "#fff", borderRadius: "50%" }} /> : mode === "login" ? "Sign In →" : "Create Account →"}
           </button>
 
-          <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.05)", textAlign: "center" }}>
-            <p style={{ color: "#64748b", fontSize: 12 }}>🔒 256-bit SSL · Secure Supabase Auth</p>
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--border)", textAlign: "center" }}>
+            <p style={{ color: "var(--text-muted)", fontSize: 12 }}>🔒 256-bit SSL · Secure Supabase Auth</p>
           </div>
         </div>
       </div>

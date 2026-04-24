@@ -51,63 +51,62 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
   return (
     <div>
       <div style={{ marginBottom: 22 }}>
-        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: isMobile ? 22 : 26, color: "#fff", letterSpacing: "-.5px" }}>Admin Panel</h1>
-        <p style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>System oversight and management</p>
+        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: isMobile ? 22 : 26, color: "var(--text)", letterSpacing: "-.5px" }}>Admin Panel</h1>
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 4 }}>System oversight and management</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
         {[
           { l: "Total Users", v: stats.totalUsers, c: "#3B82F6" },
-          { l: "Total Wallets", v: fmtN(stats.totalBalance), c: "#00D4AA" },
-          { l: "Transactions", v: stats.totalTx, c: "#F59E0B" },
+          { l: "Total Wallets", v: fmtN(stats.totalBalance), c: "var(--primary)" },
+          { l: "Transactions", v: stats.totalTx, c: "var(--accent)" },
           { l: "Active Now", v: "12", c: "#a78bfa" }
         ].map((s, i) => (
-          <div key={i} style={{ background: "#0D1426", borderRadius: 14, padding: 16, border: "1px solid rgba(255,255,255,.05)" }}>
+          <div key={i} style={{ background: "var(--bg-card)", borderRadius: 14, padding: 16, border: "1px solid var(--border)" }}>
             <p style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: isMobile ? 18 : 20, color: s.c }}>{s.v}</p>
-            <p style={{ color: "#64748b", fontSize: 12, marginTop: 2 }}>{s.l}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 2 }}>{s.l}</p>
           </div>
         ))}
       </div>
 
       <div style={{ position: "relative", marginBottom: 20 }}>
-        <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#475569" }} />
+        <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
         <input 
           placeholder="Search users by name or email..." 
-          style={{ width: "100%", background: "#0D1426", border: "1px solid rgba(255,255,255,.05)", borderRadius: 12, padding: "12px 14px 12px 42px", color: "#e2e8f0", fontSize: 14 }}
+          style={{ width: "100%", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 14px 12px 42px", color: "var(--text)", fontSize: 14 }}
           onChange={(e) => {
             const q = e.target.value.toLowerCase();
-            // Filter logic can be added here if we keep a master list
           }}
         />
       </div>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "#080C14", padding: 4, borderRadius: 12, width: "fit-content" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content" }}>
         {(["users", "transactions", "pricing"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "#0D1426" : "transparent", color: tab === t ? "#00D4AA" : "#64748b", fontWeight: 600, fontSize: 13, textTransform: "capitalize" }}>{t}</button>
+          <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize" }}>{t}</button>
         ))}
       </div>
 
       {tab === "users" && (
-        <div style={{ background: "#0D1426", borderRadius: 14, border: "1px solid rgba(255,255,255,.05)", overflow: "hidden" }}>
+        <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-                  {["User", "Balance", "Created", "Status"].map(h => <th key={h} style={{ padding: "12px 16px", textAlign: "left", color: "#475569", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{h}</th>)}
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["User", "Balance", "Created", "Status"].map(h => <th key={h} style={{ padding: "12px 16px", textAlign: "left", color: "var(--text-muted)", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{h}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {users.map(u => (
-                  <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,.03)" }}>
+                  <tr key={u.id} style={{ borderBottom: "1px solid var(--border)", opacity: 0.9 }}>
                     <td style={{ padding: "12px 16px" }}>
                       <div>
-                        <p style={{ color: "#e2e8f0", fontSize: 13, fontWeight: 600 }}>{u.full_name || "User"}</p>
-                        <p style={{ color: "#475569", fontSize: 11 }}>{u.email || "No email"}</p>
+                        <p style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>{u.full_name || "User"}</p>
+                        <p style={{ color: "var(--text-muted)", fontSize: 11 }}>{u.email || "No email"}</p>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 16px" }}><span style={{ color: "#00D4AA", fontWeight: 700 }}>{fmtN(u.balance || 0)}</span></td>
-                    <td style={{ padding: "12px 16px", color: "#94a3b8", fontSize: 12 }}>{new Date(u.created_at).toLocaleDateString()}</td>
-                    <td style={{ padding: "12px 16px" }}><span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, background: "rgba(0,212,170,.1)", color: "#00D4AA" }}>Active</span></td>
+                    <td style={{ padding: "12px 16px" }}><span style={{ color: "var(--primary)", fontWeight: 700 }}>{fmtN(u.balance || 0)}</span></td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-muted)", fontSize: 12 }}>{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td style={{ padding: "12px 16px" }}><span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, background: "rgba(0,212,170,.1)", color: "var(--primary)" }}>Active</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -116,15 +115,15 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         </div>
       )}
 
-      {tab === "transactions" && <div style={{ color: "#64748b", padding: 20 }}>Detailed transaction logs coming soon...</div>}
+      {tab === "transactions" && <div style={{ color: "var(--text-muted)", padding: 20 }}>Detailed transaction logs coming soon...</div>}
       
       {tab === "pricing" && (
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
           {["Airtime Markup", "Data Markup"].map(label => (
-            <div key={label} style={{ background: "#0D1426", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,.05)" }}>
-              <h4 style={{ color: "#fff", marginBottom: 16 }}>{label}</h4>
-              <p style={{ color: "#64748b", fontSize: 13, marginBottom: 16 }}>Configure profit margins for all network providers.</p>
-              <button style={{ width: "100%", padding: 12, borderRadius: 10, background: "rgba(0,212,170,.1)", color: "#00D4AA", border: "1px solid rgba(0,212,170,.2)", fontWeight: 700, cursor: "pointer" }}>Adjust Pricing</button>
+            <div key={label} style={{ background: "var(--bg-card)", borderRadius: 16, padding: 20, border: "1px solid var(--border)" }}>
+              <h4 style={{ color: "var(--text)", marginBottom: 16 }}>{label}</h4>
+              <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>Configure profit margins for all network providers.</p>
+              <button style={{ width: "100%", padding: 12, borderRadius: 10, background: "rgba(0,212,170,.1)", color: "var(--primary)", border: "1px solid var(--border)", fontWeight: 700, cursor: "pointer" }}>Adjust Pricing</button>
             </div>
           ))}
         </div>
