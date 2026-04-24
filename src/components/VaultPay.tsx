@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
+import React from "react";
 import {
   Wallet, Zap, LogOut, Bell, Shield, TrendingUp, Users,
   ChevronRight, CheckCircle2, XCircle, Clock, RefreshCw, Download,
@@ -153,7 +154,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 // ─── InputField ───────────────────────────────────────────────────────────
-const InputField = ({ label, type="text", placeholder, value, onChange, icon, error, suffix }: any) => (
+const InputField = memo(({ label, type="text", placeholder, value, onChange, icon, error, suffix }: any) => (
   <div>
     <label style={{display:"block",color:"#94a3b8",fontSize:12,fontWeight:600,marginBottom:6}}>{label}</label>
     <div style={{position:"relative",display:"flex",alignItems:"center"}}>
@@ -167,10 +168,10 @@ const InputField = ({ label, type="text", placeholder, value, onChange, icon, er
     </div>
     {error && <p style={{color:"#ff4444",fontSize:11,marginTop:4}}>{error}</p>}
   </div>
-);
+));
 
 // ─── NetworkSelector ──────────────────────────────────────────────────────
-const NetworkSelector = ({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) => (
+const NetworkSelector = memo(({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) => (
   <div>
     <label style={{display:"block",color:"#94a3b8",fontSize:12,fontWeight:600,marginBottom:10}}>Select Network</label>
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
@@ -184,7 +185,7 @@ const NetworkSelector = ({ selected, onSelect }: { selected: string; onSelect: (
       ))}
     </div>
   </div>
-);
+));
 
 // ─── Modal wrapper ────────────────────────────────────────────────────────
 const Modal = ({ title, onClose, children, isMobile }: any) => (
@@ -530,16 +531,20 @@ const WalletCard = ({ balance, loading, onFund, isMobile }: any) => {
 };
 
 // ─── QUICK STATS ──────────────────────────────────────────────────────────
-const QuickStats = ({ transactions }: { transactions: any[] }) => {
-  const success = transactions.filter(t=>t.status==="success"&&t.type==="debit").length;
-  const total   = transactions.filter(t=>t.type==="debit").length;
-  const spent   = transactions.filter(t=>t.type==="debit"&&t.status==="success").reduce((s,t)=>s+t.amount,0);
-  const stats = [
-    {label:"Transactions",value:total,color:"#3B82F6",icon:<Activity size={16}/>},
-    {label:"Successful",  value:success,color:"#00D4AA",icon:<CheckCircle2 size={16}/>},
-    {label:"Total Spent", value:fmtN(spent),color:"#F59E0B",icon:<TrendingUp size={16}/>},
-    {label:"Pending",     value:transactions.filter(t=>t.status==="pending").length,color:"#a78bfa",icon:<Clock size={16}/>},
-  ];
+const QuickStats = memo(({ transactions }: { transactions: any[] }) => {
+  const stats = useMemo(() => {
+    const success = transactions.filter(t => t.status === "success" && t.type === "debit").length;
+    const total = transactions.filter(t => t.type === "debit").length;
+    const spent = transactions.filter(t => t.type === "debit" && t.status === "success").reduce((s, t) => s + t.amount, 0);
+    const pending = transactions.filter(t => t.status === "pending").length;
+
+    return [
+      { label: "Transactions", value: total, color: "#3B82F6", icon: <Activity size={16} /> },
+      { label: "Successful", value: success, color: "#00D4AA", icon: <CheckCircle2 size={16} /> },
+      { label: "Total Spent", value: fmtN(spent), color: "#F59E0B", icon: <TrendingUp size={16} /> },
+      { label: "Pending", value: pending, color: "#a78bfa", icon: <Clock size={16} /> },
+    ];
+  }, [transactions]);
   return (
     <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
       {stats.map((s,i)=>(
@@ -551,10 +556,10 @@ const QuickStats = ({ transactions }: { transactions: any[] }) => {
       ))}
     </div>
   );
-};
+});
 
 // ─── QUICK ACTIONS ────────────────────────────────────────────────────────
-const QuickActions = ({ onAction, isMobile }: any) => {
+const QuickActions = memo(({ onAction, isMobile }: any) => {
   const actions = [
     {id:"airtime",label:"Buy Airtime",icon:<Phone size={isMobile?20:22}/>,color:"#F59E0B",desc:"Instant top-up"},
     {id:"data",   label:"Buy Data",   icon:<Wifi size={isMobile?20:22}/>,  color:"#3B82F6",desc:"All networks"},
@@ -573,19 +578,26 @@ const QuickActions = ({ onAction, isMobile }: any) => {
       ))}
     </div>
   );
-};
+});
 
 // ─── TRANSACTION TABLE ────────────────────────────────────────────────────
-const TxTable = ({ transactions, limit, onDownload, onRetry, showFilters=false, isMobile }: any) => {
+const TxTable = memo(({ transactions, limit, onDownload, onRetry, showFilters=false, isMobile }: any) => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [copied, setCopied] = useState<string|null>(null);
 
-  const filtered = transactions.filter((t: any) => {
-    const ms = t.service.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase()) || (t.phone&&t.phone.includes(search));
-    const mf = filter==="all"||t.status===filter||(filter==="credit"&&t.type==="credit")||(filter==="debit"&&t.type==="debit");
-    return ms && mf;
-  }).slice(0, limit||999);
+  const filtered = useMemo(() => {
+    return transactions.filter((t: any) => {
+      const ms = t.service.toLowerCase().includes(search.toLowerCase()) || 
+                 t.id.toLowerCase().includes(search.toLowerCase()) || 
+                 (t.phone && t.phone.includes(search));
+      const mf = filter === "all" || 
+                 t.status === filter || 
+                 (filter === "credit" && t.type === "credit") || 
+                 (filter === "debit" && t.type === "debit");
+      return ms && mf;
+    }).slice(0, limit || 999);
+  }, [transactions, search, filter, limit]);
 
   const copyId = (id: string) => {
     navigator.clipboard?.writeText(id).catch(()=>{});
