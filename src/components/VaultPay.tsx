@@ -7,7 +7,7 @@ import {
   ChevronRight, CheckCircle2, XCircle, Clock, RefreshCw, Download,
   Eye, EyeOff, Phone, X, ArrowUpRight, ArrowDownLeft, Copy,
   Search, ChevronDown, Home, CreditCard, Activity, Lock, Wifi,
-  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle
+  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -219,13 +219,53 @@ export default function VaultPay() {
         </div>
       )}
 
+      {/* Mobile Drawer */}
+      {isMobile && drawerOpen && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: "flex" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }} onClick={() => setDrawerOpen(false)} />
+          <div style={{ position: "relative", width: 260, background: "var(--bg)", height: "100%", display: "flex", flexDirection: "column", padding: 20, boxShadow: "2px 0 20px rgba(0,0,0,0.2)", animation: "slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Zap size={20} color="#000" fill="#000" />
+                </div>
+                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20 }}>{BRAND}</h2>
+              </div>
+              <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", color: "var(--text)", display: "flex" }}><X size={24} /></button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
+                { id: "transactions", label: "Transactions", icon: <History size={18} /> },
+                { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
+                { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
+                { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
+                { id: "settings", label: "Settings", icon: <Settings size={18} /> },
+                { id: "support", label: "Support", icon: <Info size={18} /> },
+                ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
+              ].map(item => (
+                <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text)", cursor: "pointer", fontWeight: 600 }}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={handleLogout} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600 }}>
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Header */}
         <div style={{ padding: "16px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, background: "var(--bg)", opacity: 0.95, backdropFilter: "blur(12px)", zIndex: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {isMobile && <button onClick={() => setDrawerOpen(true)} style={{ background: "none", border: "none", color: "var(--text)" }}><Menu /></button>}
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>{activePage.charAt(0).toUpperCase() + activePage.slice(1)}</h1>
+            {isMobile && activePage === "dashboard" && <button onClick={() => setDrawerOpen(true)} style={{ background: "none", border: "none", color: "var(--text)", display: "flex" }}><Menu /></button>}
+            {isMobile && activePage !== "dashboard" && <button onClick={() => setActivePage("dashboard")} style={{ background: "none", border: "none", color: "var(--text)", display: "flex" }}><ArrowLeft /></button>}
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>{activePage === "dashboard" ? "Dashboard" : activePage.charAt(0).toUpperCase() + activePage.slice(1)}</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button onClick={toggleTheme} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text)" }}>
