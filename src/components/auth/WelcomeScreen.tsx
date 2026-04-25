@@ -7,28 +7,28 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
   const [slide, setSlide] = useState(0);
   const slides = [
     {
-      title: "MTN Network",
-      desc: "Instant airtime and data delivery for all MTN users at discounted rates.",
-      image: "/images/mtn.png",
-      color: "#FFCC00"
+      title: "Instant Top-Up",
+      desc: "Recharge airtime and data for any network in seconds. Fast, reliable, and secure.",
+      image: "/images/welcome1.png",
+      color: "#00D4AA"
     },
     {
-      title: "Airtel Network",
-      desc: "Fast and reliable Airtel top-ups. Stay connected with the best data plans.",
-      image: "/images/airtel.png",
-      color: "#FF0000"
+      title: "All Networks",
+      desc: "MTN, Airtel, Glo, 9mobile — we support every major Nigerian network.",
+      image: "/images/welcome2.jpg",
+      color: "#3B82F6"
     },
     {
-      title: "Glo Network",
-      desc: "Unlimited possibilities with Glo. Enjoy massive data bonuses on every recharge.",
-      image: "/images/glo.png",
-      color: "#2BB673"
+      title: "Fund Your Wallet",
+      desc: "Add money instantly via card, bank transfer, or USSD. Zero hidden fees.",
+      image: "/images/welcome3.jpg",
+      color: "#F59E0B"
     },
     {
-      title: "9mobile Network",
-      desc: "Experience 9mobile speed. Easy data and airtime purchases in one tap.",
-      image: "/images/9mobile.png",
-      color: "#006600"
+      title: "Track Everything",
+      desc: "Full transaction history with real-time status updates and receipts.",
+      image: "/images/welcome4.jpg",
+      color: "#8B5CF6"
     }
   ];
 

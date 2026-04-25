@@ -294,6 +294,23 @@ export default function VaultPay() {
                 <Plus size={18} color="var(--primary)" /> Add Money to Wallet
               </button>
 
+              {/* Supported Networks */}
+              <div style={{ marginBottom: 32 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 12, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  {[
+                    { name: "MTN", logo: "/images/mtn_official.png" },
+                    { name: "Airtel", logo: "/images/airtel_official.png" },
+                    { name: "Glo", logo: "/images/glo_official.png" },
+                    { name: "9mobile", logo: "/images/9mobile_official.png" },
+                  ].map(n => (
+                    <div key={n.name} style={{ width: 52, height: 52, borderRadius: 14, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
+                      <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div style={{ marginBottom: 32 }}>
                 <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Quick Actions</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
