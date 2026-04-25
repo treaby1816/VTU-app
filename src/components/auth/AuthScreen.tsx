@@ -34,7 +34,7 @@ const InputField = React.memo(({ label, type = "text", placeholder, value, onCha
 InputField.displayName = "InputField";
 
 export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
-  const [mode, setMode] = useState<"welcome" | "login" | "register" | "forgot">("welcome");
+  const [mode, setMode] = useState<"welcome" | "login" | "register" | "forgot" | "success">("welcome");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
@@ -103,6 +103,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
           email: form.email,
           password: form.password,
           options: {
+            emailRedirectTo: window.location.origin,
             data: {
               full_name: form.name,
               phone: form.phone || null,
@@ -112,8 +113,8 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
 
         if (error) throw error;
         
-        if (data.user && data.session === null) {
-          setAuthError("Registration successful! Please check your email to verify your account.");
+        if (data.user) {
+          setMode("success");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -133,6 +134,28 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   if (mode === "welcome") {
     return (
       <WelcomeScreen onGetStarted={() => setMode("register")} onLogin={() => setMode("login")} isMobile={isMobile} />
+    );
+  }
+
+  if (mode === "success") {
+    return (
+      <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div className="fade-up" style={{ width: "100%", maxWidth: 440, background: "var(--bg-card)", borderRadius: 24, padding: "40px 30px", border: "1px solid var(--border)", textAlign: "center", boxShadow: "0 30px 70px rgba(0,0,0,.3)" }}>
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", border: "2px solid rgba(0,212,170,.2)" }}>
+            <Zap size={40} color="var(--primary)" fill="var(--primary)" className="bounce" />
+          </div>
+          <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 28, color: "var(--text)", marginBottom: 12 }}>Check your email!</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: 15, lineHeight: 1.6, marginBottom: 30 }}>
+            We've sent a verification link to <span style={{ color: "var(--primary)", fontWeight: 700 }}>{form.email}</span>. Click the link to activate your account and start using {BRAND}.
+          </p>
+          <div style={{ background: "rgba(245,158,11,.05)", borderRadius: 12, padding: 16, marginBottom: 30, border: "1px solid rgba(245,158,11,.1)" }}>
+            <p style={{ color: "#f59e0b", fontSize: 13, fontWeight: 500 }}>{"Don't see it? Check your spam folder or wait a few minutes."}</p>
+          </div>
+          <button onClick={() => setMode("login")} className="btn-p" style={{ width: "100%", padding: "16px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#fff", fontWeight: 700, fontSize: 16 }}>
+            Back to Sign In
+          </button>
+        </div>
+      </div>
     );
   }
 
