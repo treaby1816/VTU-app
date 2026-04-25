@@ -103,10 +103,41 @@ const SplashScreen = ({ onDone }: { onDone: () => void }) => {
   );
 };
 
+// ─── Login Success Screen ────────────────────────────────────────────────
+const LoginSuccessScreen = ({ userName, onDone }: { userName: string, onDone: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onDone, 2000);
+    return () => clearTimeout(timer);
+  }, [onDone]);
+
+  return (
+    <div style={{ 
+      position: "fixed", inset: 0, zIndex: 9999, background: "var(--bg)", 
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      textAlign: "center", padding: 20
+    }}>
+      <div className="bounce-in" style={{ 
+        width: 100, height: 100, borderRadius: "50%", 
+        background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center",
+        marginBottom: 24, border: "2px solid rgba(0,212,170,.2)"
+      }}>
+        <Check size={50} color="var(--primary)" strokeWidth={3} />
+      </div>
+      <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 32, color: "var(--text)", marginBottom: 8 }}>Welcome back!</h2>
+      <p style={{ color: "var(--text-muted)", fontSize: 18, fontWeight: 500 }}>{userName}</p>
+      <div style={{ marginTop: 40, display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="spin" style={{ width: 18, height: 18, border: "2px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />
+        <span style={{ color: "var(--text-muted)", fontSize: 14, fontWeight: 600 }}>Redirecting to Dashboard...</span>
+      </div>
+    </div>
+  );
+};
+
 // ─── MAIN APP ─────────────────────────────────────────────────────────────
 export default function VaultPay() {
   const isMobile = useIsMobile();
   const [showSplash, setShowSplash] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
   
   const { user, setUser, balance, transactions, logout, theme, toggleTheme } = useStore();
   const { isLoading: loadingDash, refetch } = useUserData();
@@ -137,16 +168,24 @@ export default function VaultPay() {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (session?.user) {
-        setUser({
+        const userData = {
           id: session.user.id,
           email: session.user.email!,
           name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
           isAdmin: session.user.email?.includes("admin") || session.user.email === "treabypapers@gmail.com" || session.user.email === "felixadewole16@gmail.com" || false
-        });
+        };
+        
+        // Show welcome screen if it's a fresh sign in
+        if (event === 'SIGNED_IN') {
+          setShowWelcome(true);
+        }
+        
+        setUser(userData);
       } else {
         setUser(null);
+        setShowWelcome(false);
       }
     });
 
@@ -177,6 +216,7 @@ export default function VaultPay() {
   };
 
   if (showSplash) return <SplashScreen onDone={() => setShowSplash(false)} />;
+  if (showWelcome && user) return <LoginSuccessScreen userName={user.name} onDone={() => setShowWelcome(false)} />;
   if (!user) return <AuthScreen isMobile={isMobile} />;
 
   return (
