@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Users, TrendingUp, Activity, Shield, Minus, Plus, Search } from "lucide-react";
+import { Users, TrendingUp, Activity, Shield, Minus, Plus, Search, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { fmtN } from "../../../src/lib/utils";
+import TxTable from "../transactions/TxTable";
 
 export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
-  const [tab, setTab] = useState<"users" | "transactions" | "pricing">("users");
+  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing">("overview");
   const [users, setUsers] = useState<any[]>([]);
-  const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0 });
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0, totalInflow: 0, totalOutflow: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,13 +28,18 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
           setStats(prev => ({ ...prev, totalUsers: userData.length, totalBalance: totalBal }));
         }
 
-        // Fetch transaction count
-        const { count, error: txErr } = await supabase
+        // Fetch recent transactions
+        const { data: txData, error: txErr } = await supabase
           .from("transactions")
-          .select("*", { count: "exact", head: true });
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(500);
         
-        if (count !== null) {
-          setStats(prev => ({ ...prev, totalTx: count }));
+        if (txData) {
+          setTransactions(txData);
+          const inflow = txData.filter(t => t.type === "credit" && t.status === "success").reduce((a, c) => a + (c.amount || 0), 0);
+          const outflow = txData.filter(t => t.type === "debit" && t.status === "success").reduce((a, c) => a + (c.amount || 0), 0);
+          setStats(prev => ({ ...prev, totalTx: txData.length, totalInflow: inflow, totalOutflow: outflow }));
         }
       } catch (err) {
         console.error("Admin data fetch error:", err);
@@ -59,8 +66,8 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         {[
           { l: "Total Users", v: stats.totalUsers, c: "#3B82F6" },
           { l: "Total Wallets", v: fmtN(stats.totalBalance), c: "var(--primary)" },
-          { l: "Transactions", v: stats.totalTx, c: "var(--accent)" },
-          { l: "Active Now", v: "12", c: "#a78bfa" }
+          { l: "Total Inflow", v: fmtN(stats.totalInflow), c: "#10b981" },
+          { l: "Total Outflow", v: fmtN(stats.totalOutflow), c: "#f43f5e" }
         ].map((s, i) => (
           <div key={i} style={{ background: "var(--bg-card)", borderRadius: 14, padding: 16, border: "1px solid var(--border)" }}>
             <p style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: isMobile ? 18 : 20, color: s.c }}>{s.v}</p>
@@ -80,11 +87,33 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         />
       </div>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content" }}>
-        {(["users", "transactions", "pricing"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize" }}>{t}</button>
+      <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content", overflowX: "auto", maxWidth: "100%" }}>
+        {(["overview", "users", "transactions", "pricing"] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{t}</button>
         ))}
       </div>
+
+      {tab === "overview" && (
+        <div style={{ display: "grid", gap: 20 }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 20, border: "1px solid var(--border)" }}>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>Platform Activity</h3>
+            <div style={{ display: "flex", gap: 16, flexDirection: isMobile ? "column" : "row" }}>
+              <div style={{ flex: 1, background: "rgba(16,185,129,.1)", padding: 16, borderRadius: 12, border: "1px solid rgba(16,185,129,.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><ArrowDownLeft size={16} color="#10b981" /><span style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>Total Wallet Funding</span></div>
+                <h4 style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>{fmtN(stats.totalInflow)}</h4>
+              </div>
+              <div style={{ flex: 1, background: "rgba(244,63,94,.1)", padding: 16, borderRadius: 12, border: "1px solid rgba(244,63,94,.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><ArrowUpRight size={16} color="#f43f5e" /><span style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>Total Value Disbursed</span></div>
+                <h4 style={{ fontSize: 24, fontWeight: 700, color: "#f43f5e" }}>{fmtN(stats.totalOutflow)}</h4>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>Recent Transactions</h3>
+            <TxTable transactions={transactions} limit={10} onDownload={() => {}} onRetry={() => {}} isMobile={isMobile} />
+          </div>
+        </div>
+      )}
 
       {tab === "users" && (
         <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", overflow: "hidden" }}>
@@ -115,7 +144,12 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         </div>
       )}
 
-      {tab === "transactions" && <div style={{ color: "var(--text-muted)", padding: 20 }}>Detailed transaction logs coming soon...</div>}
+      {tab === "transactions" && (
+        <div>
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>All System Transactions</h3>
+          <TxTable transactions={transactions} onDownload={() => {}} onRetry={() => {}} isMobile={isMobile} />
+        </div>
+      )}
       
       {tab === "pricing" && (
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
