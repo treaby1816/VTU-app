@@ -20,6 +20,7 @@ export default function FundModal({ onClose, onSubmit, isMobile }: any) {
       email: user.email,
       amount: +amount * 100, // Kobo
       currency: "NGN",
+      channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
       callback: (response: any) => {
         setStep(2);
         onSubmit({
