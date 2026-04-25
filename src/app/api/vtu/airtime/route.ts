@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success,
-      transaction_id: txData.id,
+      transaction: { ...txData, status: success ? "success" : "failed" },
       message: success ? "Airtime sent successfully" : "Airtime failed — wallet refunded",
     });
 
