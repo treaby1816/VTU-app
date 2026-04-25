@@ -34,6 +34,7 @@ function getHeaders() {
   return {
     "api-key": VTPASS_API_KEY,
     "public-key": VTPASS_PUBLIC_KEY,
+    "secret-key": process.env.VTPASS_SECRET_KEY || "",
     "Content-Type": "application/json",
   };
 }

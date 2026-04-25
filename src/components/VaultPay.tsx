@@ -188,7 +188,7 @@ export default function VaultPay() {
 
       {/* Sidebar / Nav */}
       {!isMobile && (
-        <div style={{ width: sidebarCollapsed ? 80 : 260, borderRight: "1px solid var(--border)", padding: 20, transition: "width .3s" }}>
+        <div style={{ width: sidebarCollapsed ? 80 : 260, borderRight: "1px solid var(--border)", padding: 20, transition: "width .3s", display: "flex", flexDirection: "column", position: "relative" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 40 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Zap size={20} color="#000" fill="#000" />
@@ -212,7 +212,7 @@ export default function VaultPay() {
               </button>
             ))}
           </div>
-          <button onClick={handleLogout} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600, position: "absolute", bottom: 20 }}>
+          <button onClick={handleLogout} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600 }}>
             <LogOut size={18} />
             {!sidebarCollapsed && <span>Logout</span>}
           </button>
@@ -313,26 +313,20 @@ export default function VaultPay() {
                 <Plus size={18} color="var(--primary)" /> Add Money to Wallet
               </button>
 
-              {/* Supported Networks Carousel */}
-              <div style={{ marginBottom: 32, width: "100%", overflow: "hidden" }}>
+              {/* Supported Networks */}
+              <div style={{ marginBottom: 32, width: "100%" }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
-                <div className="network-carousel-container" style={{ WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}>
-                  <div className="network-carousel">
-                    {[
-                      { name: "MTN", logo: "/images/mtn.png" },
-                      { name: "Airtel", logo: "/images/airtel.png" },
-                      { name: "Glo", logo: "/images/glo.png" },
-                      { name: "9mobile", logo: "/images/9mobile.png" },
-                      { name: "MTN-2", logo: "/images/mtn.png" },
-                      { name: "Airtel-2", logo: "/images/airtel.png" },
-                      { name: "Glo-2", logo: "/images/glo.png" },
-                      { name: "9mobile-2", logo: "/images/9mobile.png" }
-                    ].map((n, idx) => (
-                      <div key={idx} className="network-item" style={{ width: 140, height: 140, borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, flexShrink: 0 }}>
-                        <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 16 }} />
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+                  {[
+                    { name: "MTN", logo: "/images/mtn.png" },
+                    { name: "Airtel", logo: "/images/airtel.png" },
+                    { name: "Glo", logo: "/images/glo.png" },
+                    { name: "9mobile", logo: "/images/9mobile.png" }
+                  ].map((n, idx) => (
+                    <div key={idx} style={{ aspectRatio: "1/1", width: "100%", borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, transition: "transform .3s", cursor: "pointer" }} onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}>
+                      <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 16 }} />
+                    </div>
+                  ))}
                 </div>
               </div>
 
