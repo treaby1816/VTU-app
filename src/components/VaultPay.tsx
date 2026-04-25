@@ -300,7 +300,7 @@ export default function VaultPay() {
                      </div>
                      <div>
                        <p style={{ fontSize: 10, fontWeight: 600, opacity: 0.6, marginBottom: 4 }}>EXPIRES</p>
-                       <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>12/28</p>
+                       <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>**/**</p>
                      </div>
                    </div>
                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
