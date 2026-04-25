@@ -39,7 +39,7 @@ export default function AirtimeModal({ onClose, balance, onSubmit, isMobile }: a
       setStep(4);
       onSubmit(data.transaction);
     } catch (err: any) {
-      setTxResult({ status: "failed", service: "Airtime Purchase" });
+      setTxResult({ status: "failed", service: "Airtime Purchase", message: err.message });
       setStep(4);
       onSubmit({ status: "failed", amount: +amount, service: "Airtime Purchase" });
     }
@@ -92,7 +92,7 @@ export default function AirtimeModal({ onClose, balance, onSubmit, isMobile }: a
             {txResult.status === "success" ? <CheckCircle2 size={32} color="#00D4AA" /> : <XCircle size={32} color="#ff4444" />}
           </div>
           <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#fff", marginBottom: 6 }}>{txResult.status === "success" ? "Airtime Sent!" : "Transaction Failed"}</h3>
-          <p style={{ color: "#64748b", fontSize: 13, marginBottom: 20 }}>{txResult.status === "success" ? `₦${amount} sent to ${phone}` : "Wallet refunded automatically"}</p>
+          <p style={{ color: txResult.status === "success" ? "#64748b" : "#ff4444", fontSize: 13, marginBottom: 20 }}>{txResult.status === "success" ? `₦${amount} sent to ${phone}` : (txResult.message || "Wallet refunded automatically")}</p>
           <button onClick={onClose} style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "#1E2D4A", color: "#e2e8f0", fontWeight: 600 }}>Close</button>
         </div>
       )}
