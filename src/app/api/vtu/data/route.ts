@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { purchaseData, VTUNetwork } from "@/lib/vtu";
+import { purchaseData, generateVTPassRef, VTUNetwork } from "@/lib/vtu";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
@@ -16,8 +16,8 @@ const DataSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    (process.env as any).NEXT_PUBLIC_SUPABASE_URL!,
+    (process.env as any).SUPABASE_SERVICE_ROLE_KEY!
   );
 
   try {
