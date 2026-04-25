@@ -100,7 +100,7 @@ export default function AIChatbot() {
   };
 
   return (
-    <div style={{ position: "fixed", bottom: 24, left: 24, zIndex: 10000 }}>
+    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 10000 }}>
       {/* Floating Button */}
       {!isOpen && (
         <div 

@@ -247,50 +247,64 @@ export default function VaultPay() {
             <div className="fade-up">
               {/* Virtual ATM Card */}
               <div style={{ 
-                background: "linear-gradient(135deg, #00D4AA 0%, #00b896 100%)", 
+                background: "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)", 
                 borderRadius: 24, 
-                padding: 28, 
+                padding: "24px 28px", 
                 marginBottom: 32, 
-                boxShadow: "0 20px 40px rgba(0,212,170,.3)", 
-                color: "#000",
+                boxShadow: "0 20px 40px rgba(29, 78, 216, 0.3)", 
+                color: "#fff",
                 position: "relative",
                 overflow: "hidden",
-                minHeight: 200,
+                minHeight: 220,
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "space-between"
+                justifyContent: "space-between",
+                fontFamily: "'Inter', sans-serif"
               }}>
-                {/* Decorative Circles */}
-                <div style={{ position: "absolute", top: -50, right: -50, width: 150, height: 150, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
-                <div style={{ position: "absolute", bottom: -20, left: 40, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+                {/* Decorative Blobs */}
+                <div style={{ position: "absolute", top: "10%", left: "30%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%)", pointerEvents: "none" }} />
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
                   <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, opacity: 0.8, letterSpacing: 1 }}>VAULTPAY PLATINUM</p>
-                    <div style={{ width: 40, height: 30, background: "rgba(0,0,0,0.1)", borderRadius: 6, marginTop: 12, position: "relative", overflow: "hidden" }}>
-                       <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.2)" }} />
-                       <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "rgba(255,255,255,0.2)" }} />
-                    </div>
+                    <p style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, marginBottom: 4 }}>Virtual NGN Card</p>
+                    <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: -0.5 }}>{BRAND}</h3>
                   </div>
-                  <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(0,0,0,0.1)", border: "none", width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 32, height: 32, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+                      {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </button>
+                    <Wifi size={20} style={{ transform: "rotate(90deg)" }} />
+                  </div>
                 </div>
 
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, opacity: 0.8 }}>Available Balance</p>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, margin: "4px 0", letterSpacing: -1 }}>
+                <div style={{ position: "relative", zIndex: 1, marginTop: 10 }}>
+                  <div style={{ width: 44, height: 32, background: "linear-gradient(135deg, #FDE047, #EAB308)", borderRadius: 6, position: "relative", overflow: "hidden", marginBottom: 16 }}>
+                     {/* Chip lines */}
+                     <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(0,0,0,0.2)" }} />
+                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "rgba(0,0,0,0.2)" }} />
+                     <div style={{ position: "absolute", left: "20%", top: 0, bottom: 0, width: 1, background: "rgba(0,0,0,0.2)" }} />
+                     <div style={{ position: "absolute", right: "20%", top: 0, bottom: 0, width: 1, background: "rgba(0,0,0,0.2)" }} />
+                  </div>
+                  <p style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, marginBottom: 2 }}>Available Balance</p>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: 1 }}>
                     {showBalance ? fmtN(balance) : "₦ • • • • •"}
                   </h2>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", position: "relative", zIndex: 1 }}>
-                   <div>
-                     <p style={{ fontSize: 10, fontWeight: 700, opacity: 0.6, marginBottom: 2 }}>CARD HOLDER</p>
-                     <p style={{ fontSize: 14, fontWeight: 700 }}>{user.name.toUpperCase()}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", position: "relative", zIndex: 1, marginTop: 16 }}>
+                   <div style={{ display: "flex", gap: 32 }}>
+                     <div>
+                       <p style={{ fontSize: 10, fontWeight: 600, opacity: 0.6, marginBottom: 4 }}>CARDHOLDER</p>
+                       <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>{user.name.toUpperCase()}</p>
+                     </div>
+                     <div>
+                       <p style={{ fontSize: 10, fontWeight: 600, opacity: 0.6, marginBottom: 4 }}>EXPIRES</p>
+                       <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>12/28</p>
+                     </div>
                    </div>
-                   <div style={{ textAlign: "right" }}>
-                     <Zap size={24} fill="#000" color="#000" />
+                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                     <div style={{ fontFamily: "Arial", fontWeight: 900, fontSize: 20, fontStyle: "italic", letterSpacing: -1 }}>VISA</div>
                    </div>
                 </div>
               </div>
@@ -304,10 +318,10 @@ export default function VaultPay() {
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 12, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   {[
-                    { name: "MTN", logo: "/images/mtn_official.png" },
-                    { name: "Airtel", logo: "/images/airtel_official.png" },
-                    { name: "Glo", logo: "/images/glo_official.png" },
-                    { name: "9mobile", logo: "/images/9mobile_official.png" },
+                    { name: "MTN", logo: "/images/mtn.png" },
+                    { name: "Airtel", logo: "/images/airtel.png" },
+                    { name: "Glo", logo: "/images/glo.png" },
+                    { name: "9mobile", logo: "/images/9mobile.png" },
                   ].map(n => (
                     <div key={n.name} style={{ width: 52, height: 52, borderRadius: 14, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
                       <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
