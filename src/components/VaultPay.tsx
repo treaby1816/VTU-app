@@ -24,6 +24,7 @@ import FundModal from "./transactions/FundModal";
 import TxTable from "./transactions/TxTable";
 import SettingsPage from "./dashboard/SettingsPage";
 import SupportPage from "./dashboard/SupportPage";
+import AIChatbot from "./ui/AIChatbot";
 
 // ─── Responsive hook ─────────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -353,17 +354,8 @@ export default function VaultPay() {
         </div>
       </div>
 
-      {/* Floating WhatsApp Chatbot */}
-      <a href="https://wa.me/2348000000000" target="_blank" rel="noreferrer" style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 9999,
-        width: 60, height: 60, borderRadius: 30,
-        background: "#25D366", color: "#fff",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 10px 30px rgba(37,211,102,0.4)",
-        cursor: "pointer", transition: "transform 0.2s"
-      }} className="zoom-slow">
-        <MessageCircle size={30} />
-      </a>
+      {/* AI Chatbot */}
+      <AIChatbot />
 
       {/* Toasts */}
       <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10000, display: "flex", flexDirection: "column", gap: 10 }}>

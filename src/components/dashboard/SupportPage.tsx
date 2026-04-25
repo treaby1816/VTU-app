@@ -33,7 +33,7 @@ export default function SupportPage({ isMobile }: { isMobile: boolean }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 32 }}>
-        <a href="https://wa.me/2348000000000" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+        <a href="https://wa.me/2348065136221" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
           <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 16, transition: "transform 0.2s", cursor: "pointer" }}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(37,211,102,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <MessageCircle size={24} color="#25D366" />
