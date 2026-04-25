@@ -6,10 +6,10 @@ import { Zap, ChevronRight, Star } from "lucide-react";
 export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) {
   const [slide, setSlide] = useState(0);
   const slides = [
-    { title: "Instant Top-Up", desc: "Recharge airtime and data for any network in seconds.", image: "/images/welcome1.png" },
-    { title: "All Networks", desc: "MTN, Airtel, Glo, 9mobile — every major network supported.", image: "/images/welcome2.jpg" },
-    { title: "Fund Your Wallet", desc: "Add money instantly via card, transfer, or USSD.", image: "/images/welcome3.jpg" },
-    { title: "Track Everything", desc: "Full transaction history with real-time status updates.", image: "/images/welcome4.jpg" },
+    { title: "Instant Top-Up", desc: "Recharge airtime and data for any network in seconds.", image: "/images/welcome1.png", imgPos: "center center" },
+    { title: "All Networks", desc: "MTN, Airtel, Glo, 9mobile — every major network supported.", image: "/images/welcome2.jpg", imgPos: "center 30%" },
+    { title: "Fund Your Wallet", desc: "Add money instantly via card, transfer, or USSD.", image: "/images/welcome3.jpg", imgPos: "center 30%" },
+    { title: "Track Everything", desc: "Full transaction history with real-time status updates.", image: "/images/welcome4.jpg", imgPos: "center 30%" },
   ];
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
         }}>
           <img
             src={s.image} alt={s.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: s.imgPos }}
           />
         </div>
       ))}
