@@ -54,7 +54,7 @@ export default function AirtimeModal({ onClose, balance, onSubmit, isMobile }: a
           <div>
             <label style={{ display: "block", color: "#94a3b8", fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Amount (₦)</label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 10 }}>
-              {presets.map(p => <button key={p} onClick={() => setAmount(String(p))} style={{ padding: "9px 0", borderRadius: 8, border: `1px solid ${amount === String(p) ? "#00D4AA50" : "#1E2D4A"}`, background: amount === String(p) ? "rgba(0,212,170,.1)" : "#080C14", color: amount === String(p) ? "#00D4AA" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>₦{p}</button>)}
+              {presets.map(p => <button key={p} onClick={() => setAmount(String(p))} style={{ padding: "9px 0", borderRadius: 8, border: `1px solid ${amount === String(p) ? "#00D4AA50" : "#1E2D4A"}`, background: amount === String(p) ? "rgba(0,212,170,.1)" : "#080C14", color: amount === String(p) ? "#00D4AA" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>{fmtN(p)}</button>)}
             </div>
             <InputField value={amount} onChange={(val: string) => setAmount(val)} placeholder="Custom amount" type="number" />
           </div>
@@ -92,7 +92,7 @@ export default function AirtimeModal({ onClose, balance, onSubmit, isMobile }: a
             {txResult.status === "success" ? <CheckCircle2 size={32} color="#00D4AA" /> : <XCircle size={32} color="#ff4444" />}
           </div>
           <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#fff", marginBottom: 6 }}>{txResult.status === "success" ? "Airtime Sent!" : "Transaction Failed"}</h3>
-          <p style={{ color: txResult.status === "success" ? "#64748b" : "#ff4444", fontSize: 13, marginBottom: 20 }}>{txResult.status === "success" ? `₦${amount} sent to ${phone}` : (txResult.message || "Wallet refunded automatically")}</p>
+          <p style={{ color: txResult.status === "success" ? "#64748b" : "#ff4444", fontSize: 13, marginBottom: 20 }}>{txResult.status === "success" ? `${fmtN(+amount)} sent to ${phone}` : (txResult.message || "Wallet refunded automatically")}</p>
           <button onClick={onClose} style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "#1E2D4A", color: "#e2e8f0", fontWeight: 600 }}>Close</button>
         </div>
       )}

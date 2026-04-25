@@ -29,6 +29,8 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
           network,
           phone,
           plan_id: selectedPlan.id,
+          plan_name: selectedPlan.name,
+          amount: selectedPlan.price,
         }),
       });
 
@@ -41,7 +43,7 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
     } catch (err: any) {
       setTxResult({ status: "failed", service: "Data Purchase", message: err.message });
       setStep(4);
-      onSubmit({ status: "failed", amount: selectedPlan.price, service: "Data Purchase" });
+      onSubmit({ status: "failed", amount: selectedPlan?.price || 0, service: "Data Purchase" });
     }
   };
 
@@ -60,7 +62,7 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
                     <p style={{ color: selectedPlan?.id === plan.id ? "#00D4AA" : "#e2e8f0", fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{plan.name}</p>
                     <p style={{ color: "#64748b", fontSize: 11 }}>{plan.validity}</p>
                   </div>
-                  <p style={{ color: selectedPlan?.id === plan.id ? "#00D4AA" : "#e2e8f0", fontWeight: 700, fontSize: 14 }}>₦{fmtN(plan.price)}</p>
+                  <p style={{ color: selectedPlan?.id === plan.id ? "#00D4AA" : "#e2e8f0", fontWeight: 700, fontSize: 14 }}>{fmtN(plan.price)}</p>
                 </div>
               ))}
             </div>
