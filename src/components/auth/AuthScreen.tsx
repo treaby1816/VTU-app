@@ -148,6 +148,27 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
     }
   };
 
+  const handleResendLink = async () => {
+    setLoading(true);
+    setAuthError(null);
+    setSuccessMsg(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: form.email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        }
+      });
+      if (error) throw error;
+      setSuccessMsg("Verification link resent! Please check your inbox.");
+    } catch (err: any) {
+      setAuthError(err.message || "Failed to resend link. Try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (mode === "welcome") {
     return (
       <WelcomeScreen onGetStarted={() => setMode("register")} onLogin={() => setMode("login")} isMobile={isMobile} />
@@ -165,12 +186,22 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
           <p style={{ color: "var(--text-muted)", fontSize: 15, lineHeight: 1.6, marginBottom: 30 }}>
             We've sent a verification link to <span style={{ color: "var(--primary)", fontWeight: 700 }}>{form.email}</span>. Click the link to activate your account and start using {BRAND}.
           </p>
+
+          {successMsg && <p style={{ color: "var(--primary)", fontSize: 13, marginBottom: 20, fontWeight: 600 }}>{successMsg}</p>}
+          {authError && <p style={{ color: "#ff4444", fontSize: 13, marginBottom: 20, fontWeight: 600 }}>{authError}</p>}
+
           <div style={{ background: "rgba(245,158,11,.05)", borderRadius: 12, padding: 16, marginBottom: 30, border: "1px solid rgba(245,158,11,.1)" }}>
             <p style={{ color: "#f59e0b", fontSize: 13, fontWeight: 500 }}>{"Don't see it? Check your spam folder or wait a few minutes."}</p>
           </div>
-          <button onClick={() => setMode("login")} className="btn-p" style={{ width: "100%", padding: "16px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#fff", fontWeight: 700, fontSize: 16 }}>
-            Back to Sign In
-          </button>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <button onClick={() => setMode("login")} className="btn-p" style={{ width: "100%", padding: "16px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#fff", fontWeight: 700, fontSize: 16 }}>
+              Back to Sign In
+            </button>
+            <button onClick={handleResendLink} disabled={loading} style={{ width: "100%", padding: "12px 0", background: "transparent", border: "none", color: "var(--text-muted)", cursor: loading ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600 }}>
+              {loading ? "Resending..." : "Didn't receive email? Resend Link"}
+            </button>
+          </div>
         </div>
       </div>
     );
