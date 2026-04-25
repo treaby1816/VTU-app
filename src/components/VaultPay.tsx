@@ -313,20 +313,26 @@ export default function VaultPay() {
                 <Plus size={18} color="var(--primary)" /> Add Money to Wallet
               </button>
 
-              {/* Supported Networks */}
-              <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 12, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  {[
-                    { name: "MTN", logo: "/images/mtn.png" },
-                    { name: "Airtel", logo: "/images/airtel.png" },
-                    { name: "Glo", logo: "/images/glo.png" },
-                    { name: "9mobile", logo: "/images/9mobile.png" },
-                  ].map(n => (
-                    <div key={n.name} style={{ width: 52, height: 52, borderRadius: 14, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
-                      <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                    </div>
-                  ))}
+              {/* Supported Networks Carousel */}
+              <div style={{ marginBottom: 32, width: "100%", overflow: "hidden" }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
+                <div className="network-carousel-container" style={{ WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}>
+                  <div className="network-carousel">
+                    {[
+                      { name: "MTN", logo: "/images/mtn.svg" },
+                      { name: "Airtel", logo: "/images/airtel.svg" },
+                      { name: "Glo", logo: "/images/glo.svg" },
+                      { name: "9mobile", logo: "/images/9mobile.svg" },
+                      { name: "MTN-2", logo: "/images/mtn.svg" },
+                      { name: "Airtel-2", logo: "/images/airtel.svg" },
+                      { name: "Glo-2", logo: "/images/glo.svg" },
+                      { name: "9mobile-2", logo: "/images/9mobile.svg" }
+                    ].map((n, idx) => (
+                      <div key={idx} className="network-item" style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, flexShrink: 0 }}>
+                        <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
