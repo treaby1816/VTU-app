@@ -5,6 +5,7 @@ import { Users, TrendingUp, Activity, Shield, Minus, Plus, Search, ArrowUpRight,
 import { supabase } from "@/lib/supabase";
 import { fmtN } from "../../../src/lib/utils";
 import TxTable from "../transactions/TxTable";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
   const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity">("overview");
@@ -97,7 +98,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         <div style={{ display: "grid", gap: 20 }}>
           <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 20, border: "1px solid var(--border)" }}>
             <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>Platform Activity</h3>
-            <div style={{ display: "flex", gap: 16, flexDirection: isMobile ? "column" : "row" }}>
+            <div style={{ display: "flex", gap: 16, flexDirection: isMobile ? "column" : "row", marginBottom: 24 }}>
               <div style={{ flex: 1, background: "rgba(16,185,129,.1)", padding: 16, borderRadius: 12, border: "1px solid rgba(16,185,129,.2)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><ArrowDownLeft size={16} color="#10b981" /><span style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>Total Wallet Funding</span></div>
                 <h4 style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>{fmtN(stats.totalInflow)}</h4>
@@ -107,6 +108,58 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
                 <h4 style={{ fontSize: 24, fontWeight: 700, color: "#f43f5e" }}>{fmtN(stats.totalOutflow)}</h4>
               </div>
             </div>
+
+            {/* Charts Section */}
+            {transactions.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20, marginTop: 24, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+                {/* Revenue Breakdown */}
+                <div>
+                  <h4 style={{ fontFamily: "Syne, sans-serif", fontSize: 15, marginBottom: 16, color: "var(--text)" }}>Volume Breakdown</h4>
+                  <div style={{ height: 250, width: "100%" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie 
+                          data={[
+                            { name: "Airtime", value: transactions.filter(t => t.service === "Airtime" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#3B82F6" },
+                            { name: "Data", value: transactions.filter(t => t.service === "Data" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#a78bfa" },
+                            { name: "Funding", value: transactions.filter(t => (t.service === "Wallet Funding" || t.type === "credit") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#10b981" },
+                          ].filter(d => d.value > 0)} 
+                          cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value"
+                        >
+                          {transactions.length > 0 && [
+                            { name: "Airtime", value: transactions.filter(t => t.service === "Airtime" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#3B82F6" },
+                            { name: "Data", value: transactions.filter(t => t.service === "Data" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#a78bfa" },
+                            { name: "Funding", value: transactions.filter(t => (t.service === "Wallet Funding" || t.type === "credit") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#10b981" },
+                          ].filter(d => d.value > 0).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value: any) => fmtN(Number(value) || 0)} contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 8 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Service Comparison Bar */}
+                <div>
+                  <h4 style={{ fontFamily: "Syne, sans-serif", fontSize: 15, marginBottom: 16, color: "var(--text)" }}>Service Comparison</h4>
+                  <div style={{ height: 250, width: "100%" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[
+                        { name: "Airtime", amount: transactions.filter(t => t.service === "Airtime" && t.status === "success").reduce((a,c) => a + c.amount, 0) },
+                        { name: "Data", amount: transactions.filter(t => t.service === "Data" && t.status === "success").reduce((a,c) => a + c.amount, 0) }
+                      ]}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                        <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => "₦" + (val / 1000) + "k"} />
+                        <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} formatter={(value: any) => fmtN(Number(value) || 0)} contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 8 }} />
+                        <Bar dataKey="amount" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>Recent Transactions</h3>
