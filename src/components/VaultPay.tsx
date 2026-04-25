@@ -235,7 +235,7 @@ export default function VaultPay() {
               <p style={{ fontSize: 13, fontWeight: 700 }}>{user.name}</p>
               <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{user.email}</p>
             </div>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", fontWeight: 700 }}>
+            <div onClick={() => handleNav("settings")} style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", fontWeight: 700, cursor: "pointer", transition: "all .2s" }} title="Go to Settings">
               {user.name[0]}
             </div>
           </div>
