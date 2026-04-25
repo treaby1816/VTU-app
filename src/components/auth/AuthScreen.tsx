@@ -178,6 +178,11 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
           <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--border)", textAlign: "center" }}>
             <p style={{ color: "var(--text-muted)", fontSize: 12 }}>🔒 256-bit SSL · Secure Supabase Auth</p>
           </div>
+          
+          <button onClick={checkDebug} style={{ marginTop: 20, width: "100%", background: "transparent", border: "1px solid #ff444450", color: "#ff4444", padding: "8px", borderRadius: 8, fontSize: 10, cursor: "pointer", opacity: 0.5 }}>
+            🔧 DEBUG SYSTEM (Click to check keys)
+          </button>
+        </div>
         </div>
       </div>
       </div>
