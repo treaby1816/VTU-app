@@ -120,16 +120,16 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
                       <PieChart>
                         <Pie 
                           data={[
-                            { name: "Airtime", value: transactions.filter(t => t.service === "Airtime" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#3B82F6" },
-                            { name: "Data", value: transactions.filter(t => t.service === "Data" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#a78bfa" },
-                            { name: "Funding", value: transactions.filter(t => (t.service === "Wallet Funding" || t.type === "credit") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#10b981" },
+                            { name: "Airtime", value: transactions.filter(t => t.service && t.service.includes("Airtime") && !t.service.includes("Refund") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#3B82F6" },
+                            { name: "Data", value: transactions.filter(t => t.service && t.service.includes("Data") && !t.service.includes("Refund") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#a78bfa" },
+                            { name: "Funding", value: transactions.filter(t => (t.type === "credit" && (!t.service || t.service.includes("Funding"))) && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#10b981" },
                           ].filter(d => d.value > 0)} 
                           cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value"
                         >
                           {transactions.length > 0 && [
-                            { name: "Airtime", value: transactions.filter(t => t.service === "Airtime" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#3B82F6" },
-                            { name: "Data", value: transactions.filter(t => t.service === "Data" && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#a78bfa" },
-                            { name: "Funding", value: transactions.filter(t => (t.service === "Wallet Funding" || t.type === "credit") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#10b981" },
+                            { name: "Airtime", value: transactions.filter(t => t.service && t.service.includes("Airtime") && !t.service.includes("Refund") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#3B82F6" },
+                            { name: "Data", value: transactions.filter(t => t.service && t.service.includes("Data") && !t.service.includes("Refund") && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#a78bfa" },
+                            { name: "Funding", value: transactions.filter(t => (t.type === "credit" && (!t.service || t.service.includes("Funding"))) && t.status === "success").reduce((a,c) => a + c.amount, 0), color: "#10b981" },
                           ].filter(d => d.value > 0).map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
@@ -146,8 +146,8 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
                   <div style={{ height: 250, width: "100%" }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={[
-                        { name: "Airtime", amount: transactions.filter(t => t.service === "Airtime" && t.status === "success").reduce((a,c) => a + c.amount, 0) },
-                        { name: "Data", amount: transactions.filter(t => t.service === "Data" && t.status === "success").reduce((a,c) => a + c.amount, 0) }
+                        { name: "Airtime", amount: transactions.filter(t => t.service && t.service.includes("Airtime") && !t.service.includes("Refund") && t.status === "success").reduce((a,c) => a + c.amount, 0) },
+                        { name: "Data", amount: transactions.filter(t => t.service && t.service.includes("Data") && !t.service.includes("Refund") && t.status === "success").reduce((a,c) => a + c.amount, 0) }
                       ]}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
