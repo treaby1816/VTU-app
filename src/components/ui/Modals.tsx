@@ -17,12 +17,12 @@ export const Modal = ({ title, onClose, children, isMobile }: any) => (
   </div>
 );
 
-export const InputField = ({ label, icon, ...props }: any) => (
+export const InputField = ({ label, icon, onChange, ...props }: any) => (
   <div>
     <label style={{ display: "block", color: "#94a3b8", fontSize: 12, fontWeight: 600, marginBottom: 8 }}>{label}</label>
     <div style={{ position: "relative" }}>
       {icon && <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#475569" }}>{icon}</div>}
-      <input {...props} className="inp" style={{ width: "100%", background: "#080C14", border: "1px solid #1E2D4A", borderRadius: 12, padding: "12px 14px", paddingLeft: icon ? 40 : 14, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+      <input {...props} onChange={e => onChange && onChange(e.target.value)} className="inp" style={{ width: "100%", background: "#080C14", border: "1px solid #1E2D4A", borderRadius: 12, padding: "12px 14px", paddingLeft: icon ? 40 : 14, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
     </div>
   </div>
 );
