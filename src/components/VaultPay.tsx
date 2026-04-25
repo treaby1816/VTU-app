@@ -247,12 +247,12 @@ export default function VaultPay() {
             <div className="fade-up">
               {/* Virtual ATM Card */}
               <div style={{ 
-                background: "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)", 
+                background: "linear-gradient(135deg, #FEF08A 0%, #EAB308 50%, #CA8A04 100%)", 
                 borderRadius: 24, 
                 padding: "24px 28px", 
                 marginBottom: 32, 
-                boxShadow: "0 20px 40px rgba(29, 78, 216, 0.3)", 
-                color: "#fff",
+                boxShadow: "0 20px 40px rgba(234, 179, 8, 0.3)", 
+                color: "#1e293b",
                 position: "relative",
                 overflow: "hidden",
                 minHeight: 220,
@@ -271,7 +271,7 @@ export default function VaultPay() {
                     <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: -0.5 }}>{BRAND}</h3>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 32, height: 32, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+                    <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(0,0,0,0.1)", border: "none", width: 32, height: 32, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#1e293b" }}>
                       {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                     <Wifi size={20} style={{ transform: "rotate(90deg)" }} />
