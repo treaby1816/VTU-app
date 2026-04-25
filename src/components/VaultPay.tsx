@@ -113,6 +113,7 @@ export default function VaultPay() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [modal, setModal] = useState<string | null>(null);
   const [toasts, setToasts] = useState<any[]>([]);
+  const [showBalance, setShowBalance] = useState(true);
   const toastId = useRef(0);
 
   const addToast = useCallback((type: string, title: string, msg?: string) => {
