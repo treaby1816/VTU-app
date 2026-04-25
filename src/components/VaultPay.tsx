@@ -319,17 +319,17 @@ export default function VaultPay() {
                 <div className="network-carousel-container" style={{ WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}>
                   <div className="network-carousel">
                     {[
-                      { name: "MTN", logo: "/images/mtn.svg" },
-                      { name: "Airtel", logo: "/images/airtel.svg" },
-                      { name: "Glo", logo: "/images/glo.svg" },
-                      { name: "9mobile", logo: "/images/9mobile.svg" },
-                      { name: "MTN-2", logo: "/images/mtn.svg" },
-                      { name: "Airtel-2", logo: "/images/airtel.svg" },
-                      { name: "Glo-2", logo: "/images/glo.svg" },
-                      { name: "9mobile-2", logo: "/images/9mobile.svg" }
+                      { name: "MTN", logo: "/images/mtn.png" },
+                      { name: "Airtel", logo: "/images/airtel.png" },
+                      { name: "Glo", logo: "/images/glo.png" },
+                      { name: "9mobile", logo: "/images/9mobile.png" },
+                      { name: "MTN-2", logo: "/images/mtn.png" },
+                      { name: "Airtel-2", logo: "/images/airtel.png" },
+                      { name: "Glo-2", logo: "/images/glo.png" },
+                      { name: "9mobile-2", logo: "/images/9mobile.png" }
                     ].map((n, idx) => (
-                      <div key={idx} className="network-item" style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, flexShrink: 0 }}>
-                        <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      <div key={idx} className="network-item" style={{ width: 140, height: 140, borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, flexShrink: 0 }}>
+                        <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 16 }} />
                       </div>
                     ))}
                   </div>

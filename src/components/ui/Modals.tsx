@@ -29,10 +29,10 @@ export const InputField = ({ label, icon, ...props }: any) => (
 
 export const NetworkSelector = ({ selected, onSelect }: any) => {
   const networks = [
-    { id: "mtn", name: "MTN", color: "#FFCC00", logo: "/images/mtn.svg" },
-    { id: "airtel", name: "Airtel", color: "#FF0000", logo: "/images/airtel.svg" },
-    { id: "glo", name: "Glo", color: "#00FF00", logo: "/images/glo.svg" },
-    { id: "9mobile", name: "9mobile", color: "#006600", logo: "/images/9mobile.svg" },
+    { id: "mtn", name: "MTN", color: "#FFCC00", logo: "/images/mtn.png" },
+    { id: "airtel", name: "Airtel", color: "#FF0000", logo: "/images/airtel.png" },
+    { id: "glo", name: "Glo", color: "#00FF00", logo: "/images/glo.png" },
+    { id: "9mobile", name: "9mobile", color: "#006600", logo: "/images/9mobile.png" },
   ];
   return (
     <div>
