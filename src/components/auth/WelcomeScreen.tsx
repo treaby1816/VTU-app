@@ -30,7 +30,7 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
         }}>
           <img
             src={s.image} alt={s.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
           />
         </div>
       ))}
