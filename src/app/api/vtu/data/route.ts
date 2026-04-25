@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Insufficient wallet balance" }, { status: 400 });
     }
 
-    const ref = "DAT" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+    const ref = generateVTPassRef();
 
     // Create pending transaction
     const { data: txData, error: txError } = await supabase
@@ -76,8 +76,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Call VTU provider
-    const vtuResponse = await purchaseData({ network: network as VTUNetwork, phone, planId: plan_id, ref });
-    const success = vtuResponse?.Status === "successful" || vtuResponse?.status === "success";
+    const vtuResponse = await purchaseData({ 
+      network: network as VTUNetwork, 
+      phone, 
+      variation_code: plan_id, 
+      ref 
+    });
+    
+    // VTPass success code
+    const success = vtuResponse?.code === "000" || vtuResponse?.content?.transactions?.status === "delivered";
 
     // Update status
     await supabase.from("transactions").update({ status: success ? "success" : "failed" }).eq("id", txData.id);

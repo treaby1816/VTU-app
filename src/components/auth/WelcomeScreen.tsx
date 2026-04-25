@@ -7,28 +7,28 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
   const [slide, setSlide] = useState(0);
   const slides = [
     {
-      title: "Fastest VTU Delivery",
-      desc: "Buy airtime and data in seconds with 99.9% uptime guaranteed.",
-      image: "/images/welcome1.png",
-      color: "#00D4AA"
+      title: "MTN Network",
+      desc: "Instant airtime and data delivery for all MTN users at discounted rates.",
+      image: "/images/mtn.png",
+      color: "#FFCC00"
     },
     {
-      title: "Secure Wallet System",
-      desc: "Fund your wallet instantly via multiple channels and track every Kobo.",
-      image: "/images/welcome2.jpg",
-      color: "#3B82F6"
+      title: "Airtel Network",
+      desc: "Fast and reliable Airtel top-ups. Stay connected with the best data plans.",
+      image: "/images/airtel.png",
+      color: "#FF0000"
     },
     {
-      title: "Affordable Pricing",
-      desc: "Get the best rates on all networks. Save more on every transaction.",
-      image: "/images/welcome3.jpg",
-      color: "#F59E0B"
+      title: "Glo Network",
+      desc: "Unlimited possibilities with Glo. Enjoy massive data bonuses on every recharge.",
+      image: "/images/glo.png",
+      color: "#2BB673"
     },
     {
-      title: "Built for Everyone",
-      desc: "Seamless experience for both mobile and desktop users.",
-      image: "/images/welcome4.jpg",
-      color: "#a78bfa"
+      title: "9mobile Network",
+      desc: "Experience 9mobile speed. Easy data and airtime purchases in one tap.",
+      image: "/images/9mobile.png",
+      color: "#006600"
     }
   ];
 
@@ -40,14 +40,13 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
   return (
     <div style={{ position: "fixed", inset: 0, background: "var(--bg)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Background Glow */}
-      <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 600, height: 600, background: `radial-gradient(circle, ${slides[slide].color}10 0%, transparent 70%)`, transition: "background 1.5s ease", filter: "blur(40px)" }} />
-      <div style={{ position: "absolute", bottom: -100, left: -100, width: 400, height: 400, background: `radial-gradient(circle, ${slides[slide].color}05 0%, transparent 70%)`, transition: "background 1.5s ease", filter: "blur(40px)" }} />
-
+      <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 600, height: 600, background: `radial-gradient(circle, ${slides[slide].color}15 0%, transparent 70%)`, transition: "background 1.5s ease", filter: "blur(40px)" }} />
+      
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center" }}>
         {/* Animated Carousel */}
         <div style={{ width: "100%", maxWidth: 440, position: "relative", marginBottom: 32 }}>
           <div key={slide} className="fade-up" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={{ width: isMobile ? "min(300px, 75vw)" : 300, aspectRatio: "9/14", borderRadius: 32, overflow: "hidden", border: "1px solid var(--border)", boxShadow: `0 40px 100px rgba(0,0,0,0.4), 0 0 40px ${slides[slide].color}15`, marginBottom: 32, position: "relative", background: "var(--bg-card)" }}>
+            <div style={{ width: isMobile ? "min(300px, 75vw)" : 300, aspectRatio: "9/14", borderRadius: 32, overflow: "hidden", border: "1px solid var(--border)", boxShadow: `0 40px 100px rgba(0,0,0,0.4), 0 0 40px ${slides[slide].color}20`, marginBottom: 32, position: "relative", background: "var(--bg-card)" }}>
               <img src={slides[slide].image} alt={slides[slide].title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 10s linear" }} className="zoom-slow" />
             </div>
             <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: isMobile ? 28 : 34, color: "var(--text)", marginBottom: 12, lineHeight: 1.1, letterSpacing: "-.5px" }}>{slides[slide].title}</h2>
@@ -72,8 +71,8 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
       </div>
 
       {/* Action Buttons */}
-      <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 440, margin: "0 auto 40px" }}>
-        <button onClick={onGetStarted} style={{ width: "100%", padding: "16px 0", borderRadius: 16, border: "none", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#fff", fontWeight: 700, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+      <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 440, margin: "0 auto 40px", position: "relative", zIndex: 10 }}>
+        <button onClick={onGetStarted} style={{ width: "100%", padding: "16px 0", borderRadius: 16, border: "none", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#000", fontWeight: 700, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(0,212,170,0.2)" }}>
           Get Started <ChevronRight size={18} />
         </button>
         <button onClick={onLogin} style={{ width: "100%", padding: "16px 0", borderRadius: 16, border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>

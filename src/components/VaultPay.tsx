@@ -39,30 +39,62 @@ function useIsMobile(breakpoint = 768) {
 // ─── Splash Screen ────────────────────────────────────────────────────────
 const SplashScreen = ({ onDone }: { onDone: () => void }) => {
   const [progress, setProgress] = useState(0);
+  const [showProgress, setShowProgress] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
   useEffect(() => {
+    const t1 = setTimeout(() => setShowProgress(true), 400);
     const iv = setInterval(() => {
       setProgress(p => {
         if (p >= 100) {
           clearInterval(iv);
-          setTimeout(onDone, 500);
+          setTimeout(() => {
+            setIsExiting(true);
+            setTimeout(onDone, 600);
+          }, 400);
           return 100;
         }
-        return p + 2;
+        return p + 1.5;
       });
     }, 30);
-    return () => clearInterval(iv);
+    return () => { clearInterval(iv); clearTimeout(t1); };
   }, [onDone]);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-      <div className="splash-in" style={{ marginBottom: 24 }}>
-        <div style={{ width: 80, height: 80, borderRadius: 24, background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 20px 60px rgba(0,212,170,.3)" }}>
-          <Zap size={40} color="#fff" fill="#fff" />
+    <div className={isExiting ? "fade-out" : ""} style={{ 
+      position: "fixed", inset: 0, zIndex: 9999, background: "var(--bg)", 
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" 
+    }}>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ 
+          width: 90, height: 90, borderRadius: 28, 
+          background: "linear-gradient(135deg,#00D4AA,#00b896)", 
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 20px 60px rgba(0,212,170,.4)"
+        }}>
+          <Zap size={45} color="#fff" fill="#fff" />
         </div>
       </div>
-      <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 32, color: "var(--text)" }}>{BRAND}</h1>
-      <div style={{ width: 200, height: 3, background: "var(--border)", borderRadius: 3, marginTop: 32, overflow: "hidden" }}>
-        <div style={{ height: "100%", background: "var(--primary)", width: `${progress}%`, transition: "width .1s linear" }} />
+      
+      <h1 style={{ 
+        fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 34, 
+        color: "var(--text)", margin: 0
+      }}>
+        VaultPay
+      </h1>
+
+      <div style={{ height: 60, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {showProgress && (
+          <div style={{ 
+            width: 220, height: 3, background: "var(--border)", 
+            borderRadius: 3, overflow: "hidden"
+          }}>
+            <div style={{ 
+              height: "100%", background: "var(--primary)", 
+              width: `${progress}%`, transition: "width .15s linear"
+            }} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -207,11 +239,59 @@ export default function VaultPay() {
         <div style={{ padding: isMobile ? 16 : 32, maxWidth: 1200, width: "100%", margin: "0 auto" }}>
           {activePage === "dashboard" && (
             <div className="fade-up">
-              <div style={{ background: "linear-gradient(135deg,#00D4AA,#00b896)", borderRadius: 24, padding: 28, marginBottom: 32, boxShadow: "0 20px 40px rgba(0,212,170,.2)", color: "#000" }}>
-                <p style={{ fontSize: 13, fontWeight: 600, opacity: 0.8 }}>Available Balance</p>
-                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, margin: "8px 0" }}>{fmtN(balance)}</h2>
-                <button onClick={() => setModal("fund")} style={{ background: "#000", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 12, fontWeight: 700, fontSize: 13, marginTop: 12, cursor: "pointer" }}>+ Fund Wallet</button>
+              {/* Virtual ATM Card */}
+              <div style={{ 
+                background: "linear-gradient(135deg, #00D4AA 0%, #00b896 100%)", 
+                borderRadius: 24, 
+                padding: 28, 
+                marginBottom: 32, 
+                boxShadow: "0 20px 40px rgba(0,212,170,.3)", 
+                color: "#000",
+                position: "relative",
+                overflow: "hidden",
+                minHeight: 200,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between"
+              }}>
+                {/* Decorative Circles */}
+                <div style={{ position: "absolute", top: -50, right: -50, width: 150, height: 150, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
+                <div style={{ position: "absolute", bottom: -20, left: 40, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, opacity: 0.8, letterSpacing: 1 }}>VAULTPAY PLATINUM</p>
+                    <div style={{ width: 40, height: 30, background: "rgba(0,0,0,0.1)", borderRadius: 6, marginTop: 12, position: "relative", overflow: "hidden" }}>
+                       <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.2)" }} />
+                       <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "rgba(255,255,255,0.2)" }} />
+                    </div>
+                  </div>
+                  <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(0,0,0,0.1)", border: "none", width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
+                </div>
+
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, opacity: 0.8 }}>Available Balance</p>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, margin: "4px 0", letterSpacing: -1 }}>
+                    {showBalance ? fmtN(balance) : "₦ • • • • •"}
+                  </h2>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", position: "relative", zIndex: 1 }}>
+                   <div>
+                     <p style={{ fontSize: 10, fontWeight: 700, opacity: 0.6, marginBottom: 2 }}>CARD HOLDER</p>
+                     <p style={{ fontSize: 14, fontWeight: 700 }}>{user.name.toUpperCase()}</p>
+                   </div>
+                   <div style={{ textAlign: "right" }}>
+                     <Zap size={24} fill="#000" color="#000" />
+                   </div>
+                </div>
               </div>
+              
+              <button onClick={() => setModal("fund")} style={{ width: "100%", background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", padding: "16px 0", borderRadius: 16, fontWeight: 700, fontSize: 14, marginBottom: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <Plus size={18} color="var(--primary)" /> Add Money to Wallet
+              </button>
 
               <div style={{ marginBottom: 32 }}>
                 <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Quick Actions</h3>

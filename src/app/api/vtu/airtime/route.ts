@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 3. Create PENDING debit transaction ──────────────────────────────
-    const ref = "AIR" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+    const ref = generateVTPassRef();
 
     const { data: txData, error: txError } = await supabase
       .from("transactions")
@@ -91,7 +91,8 @@ export async function POST(req: NextRequest) {
       ref,
     });
 
-    const success = vtuResponse?.Status === "successful" || vtuResponse?.status === "success";
+    // VTPass returns code '000' for success
+    const success = vtuResponse?.code === "000" || vtuResponse?.content?.transactions?.status === "delivered";
 
     // ── 5. Update transaction status ─────────────────────────────────────
     await supabase

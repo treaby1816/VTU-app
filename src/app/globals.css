@@ -64,12 +64,21 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 @keyframes glowPulse   { 0%,100%{opacity:.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
 
 @keyframes zoomSlow    { from{transform:scale(1)} to{transform:scale(1.1)} }
+@keyframes splashIn    { 0%{transform:scale(0.8);opacity:0;filter:blur(10px)} 100%{transform:scale(1);opacity:1;filter:blur(0)} }
 
 .fade-up    { animation: fadeUp .5s ease forwards; }
 .bounce-in  { animation: bounceIn .4s cubic-bezier(.34,1.56,.64,1) forwards; }
 .toast-slide{ animation: toastSlide .4s cubic-bezier(.34,1.56,.64,1) forwards; }
 .spin       { animation: spin 1s linear infinite; }
 .zoom-slow  { animation: zoomSlow 10s linear infinite alternate; }
+.splash-in  { animation: splashIn 0.8s cubic-bezier(.34,1.56,.64,1) forwards; }
+.logo-anim  { animation: logoGlow 2s ease-in-out infinite; }
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 20px 60px rgba(0,212,170,0.4), 0 0 0px rgba(0,212,170,0); }
+  50% { box-shadow: 0 20px 80px rgba(0,212,170,0.6), 0 0 20px rgba(0,212,170,0.3); }
+}
+@keyframes fadeOut   { from{opacity:1} to{opacity:0;visibility:hidden} }
+.fade-out   { animation: fadeOut 0.6s ease forwards; }
 .shimmer-bg { background:linear-gradient(90deg,#0D1426 25%,#1a2540 50%,#0D1426 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
 .glass      { background:rgba(13,20,38,.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.06); }
 .tx-row     { transition:background .15s; }

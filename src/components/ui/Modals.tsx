@@ -29,10 +29,10 @@ export const InputField = ({ label, icon, ...props }: any) => (
 
 export const NetworkSelector = ({ selected, onSelect }: any) => {
   const networks = [
-    { id: "mtn", name: "MTN", color: "#FFCC00" },
-    { id: "airtel", name: "Airtel", color: "#FF0000" },
-    { id: "glo", name: "Glo", color: "#00FF00" },
-    { id: "9mobile", name: "9mobile", color: "#006600" },
+    { id: "mtn", name: "MTN", color: "#FFCC00", logo: "/images/mtn_official.png" },
+    { id: "airtel", name: "Airtel", color: "#FF0000", logo: "/images/airtel_official.png" },
+    { id: "glo", name: "Glo", color: "#00FF00", logo: "/images/glo_official.png" },
+    { id: "9mobile", name: "9mobile", color: "#006600", logo: "/images/9mobile_official.png" },
   ];
   return (
     <div>
@@ -40,7 +40,9 @@ export const NetworkSelector = ({ selected, onSelect }: any) => {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
         {networks.map(n => (
           <button key={n.id} onClick={() => onSelect(n.id)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 0", borderRadius: 12, border: `1px solid ${selected === n.id ? n.color + "40" : "#1E2D4A"}`, background: selected === n.id ? n.color + "10" : "#080C14", cursor: "pointer", transition: "all .2s" }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: n.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#000", fontSize: 12 }}>{n.name[0]}</div>
+            <div style={{ width: 34, height: 34, borderRadius: 8, overflow: "hidden", background: n.id === "mtn" ? "#000" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 4 }}>
+              <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            </div>
             <span style={{ fontSize: 10, fontWeight: 700, color: selected === n.id ? "#fff" : "#64748b" }}>{n.name}</span>
           </button>
         ))}
