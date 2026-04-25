@@ -7,7 +7,7 @@ import { fmtN } from "../../../src/lib/utils";
 import TxTable from "../transactions/TxTable";
 
 export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
-  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity">("overview");
   const [users, setUsers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0, totalInflow: 0, totalOutflow: 0 });
@@ -88,7 +88,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content", overflowX: "auto", maxWidth: "100%" }}>
-        {(["overview", "users", "transactions", "pricing"] as const).map(t => (
+        {(["overview", "users", "transactions", "activity", "pricing"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{t}</button>
         ))}
       </div>
@@ -148,6 +148,32 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         <div>
           <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>All System Transactions</h3>
           <TxTable transactions={transactions} onDownload={() => alert("Receipt download feature coming soon!")} onRetry={() => alert("Retry functionality coming soon!")} isMobile={isMobile} />
+        </div>
+      )}
+
+      {tab === "activity" && (
+        <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", overflow: "hidden", padding: 20 }}>
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 6 }}>Security & Activity Audit Log</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Real-time monitoring of user registrations and transactions.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              ...users.map(u => ({ id: `usr-${u.id}`, title: "New User Registration", desc: `${u.full_name || u.email || 'A user'} joined the platform.`, date: new Date(u.created_at).getTime(), icon: <Users size={16} color="#3B82F6"/>, color: "rgba(59,130,246,.1)" })),
+              ...transactions.map(t => ({ id: `tx-${t.id}`, title: t.type === "credit" ? "Wallet Funded" : "Service Purchased", desc: `A user ${t.type === "credit" ? "funded wallet" : "spent"} ${fmtN(t.amount)} on ${t.service}.`, date: new Date(t.created_at || t.date).getTime(), icon: <Activity size={16} color="var(--primary)"/>, color: "rgba(0,212,170,.1)" }))
+            ].sort((a, b) => b.date - a.date).slice(0, 50).map(log => (
+              <div key={log.id} style={{ display: "flex", gap: 16, alignItems: "flex-start", paddingBottom: 12, borderBottom: "1px solid var(--border)" }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: log.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {log.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 600, fontSize: 14, color: "var(--text)" }}>{log.title}</p>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{log.desc}</p>
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                  {new Date(log.date).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       
