@@ -110,7 +110,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
           </div>
           <div>
             <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>Recent Transactions</h3>
-            <TxTable transactions={transactions} limit={10} onDownload={() => {}} onRetry={() => {}} isMobile={isMobile} />
+            <TxTable transactions={transactions} limit={10} onDownload={() => alert("Receipt download feature coming soon!")} onRetry={() => alert("Retry functionality coming soon!")} isMobile={isMobile} />
           </div>
         </div>
       )}
@@ -147,7 +147,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
       {tab === "transactions" && (
         <div>
           <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 16 }}>All System Transactions</h3>
-          <TxTable transactions={transactions} onDownload={() => {}} onRetry={() => {}} isMobile={isMobile} />
+          <TxTable transactions={transactions} onDownload={() => alert("Receipt download feature coming soon!")} onRetry={() => alert("Retry functionality coming soon!")} isMobile={isMobile} />
         </div>
       )}
       
@@ -157,7 +157,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
             <div key={label} style={{ background: "var(--bg-card)", borderRadius: 16, padding: 20, border: "1px solid var(--border)" }}>
               <h4 style={{ color: "var(--text)", marginBottom: 16 }}>{label}</h4>
               <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 16 }}>Configure profit margins for all network providers.</p>
-              <button style={{ width: "100%", padding: 12, borderRadius: 10, background: "rgba(0,212,170,.1)", color: "var(--primary)", border: "1px solid var(--border)", fontWeight: 700, cursor: "pointer" }}>Adjust Pricing</button>
+              <button onClick={() => alert("Pricing configuration module coming soon!")} style={{ width: "100%", padding: 12, borderRadius: 10, background: "rgba(0,212,170,.1)", color: "var(--primary)", border: "1px solid var(--border)", fontWeight: 700, cursor: "pointer" }}>Adjust Pricing</button>
             </div>
           ))}
         </div>
