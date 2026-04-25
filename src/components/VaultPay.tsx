@@ -132,7 +132,7 @@ export default function VaultPay() {
           id: session.user.id,
           email: session.user.email!,
           name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-          isAdmin: session.user.email?.includes("admin") || false
+          isAdmin: session.user.email?.includes("admin") || session.user.email === "treaby1816@gmail.com" || false
         });
       }
     });
