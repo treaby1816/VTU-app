@@ -98,7 +98,7 @@ export default function WelcomeScreen({ onGetStarted, onLogin, isMobile }: any) 
           </div>
 
           {/* Dots */}
-          <div style={{ display: "flex", gap: 8, marginBottom: isMobile ? 24 : 32 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: isMobile ? 24 : 32 }}>
             {slides.map((_, i) => (
               <div key={i} onClick={() => setSlide(i)} style={{
                 width: slide === i ? 28 : 8, height: 8, borderRadius: 4,
