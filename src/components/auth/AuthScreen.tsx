@@ -95,10 +95,21 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "16px" : "20px", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", padding: isMobile ? "16px" : "20px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(0,212,170,.06) 0%,transparent 70%)", top: -200, right: -200, pointerEvents: "none" }} />
       <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(245,158,11,.04) 0%,transparent 70%)", bottom: -200, left: -200, pointerEvents: "none" }} />
+
+      {/* Back Button — top left */}
+      <button onClick={() => setMode("welcome")} style={{
+        background: "var(--bg-card)", border: "1px solid var(--border)",
+        width: 40, height: 40, borderRadius: 12, cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "var(--text)", fontSize: 18, zIndex: 10, marginBottom: 16, flexShrink: 0
+      }}>
+        ←
+      </button>
       
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div className="fade-up" style={{ width: "100%", maxWidth: 440, zIndex: 10 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -108,9 +119,6 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
             <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 26, color: "var(--text)", letterSpacing: "-.5px" }}>{BRAND}</span>
           </div>
           <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Nigeria's fastest VTU platform</p>
-          <button onClick={() => setMode("welcome")} style={{ background: "none", border: "none", color: "var(--primary)", fontSize: 12, fontWeight: 600, marginTop: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, width: "100%" }}>
-            ← Back to Welcome
-          </button>
         </div>
 
         <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: isMobile ? "20px" : "28px", border: "1px solid var(--border)", boxShadow: "0 24px 60px rgba(0,0,0,.15)" }}>
@@ -158,6 +166,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
             <p style={{ color: "var(--text-muted)", fontSize: 12 }}>🔒 256-bit SSL · Secure Supabase Auth</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
