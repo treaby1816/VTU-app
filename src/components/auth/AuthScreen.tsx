@@ -40,6 +40,19 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [authError, setAuthError] = useState<string | null>(null);
+  const [debugClicks, setDebugClicks] = useState(0);
+
+  const checkDebug = () => {
+    const next = debugClicks + 1;
+    if (next >= 5) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      alert(`DEBUG INFO:\nURL: ${url ? 'FOUND ('+url.substring(0,10)+'...)' : 'MISSING'}\nKEY: ${key ? 'FOUND ('+key.substring(0,10)+'...)' : 'MISSING'}\nENV: ${process.env.NODE_ENV}`);
+      setDebugClicks(0);
+    } else {
+      setDebugClicks(next);
+    }
+  };
 
   const set = (k: string) => (v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -112,7 +125,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div className="fade-up" style={{ width: "100%", maxWidth: 440, zIndex: 10 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <div onClick={checkDebug} style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8, cursor: "pointer" }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(0,212,170,.3)" }}>
               <Zap size={22} color="#fff" fill="#fff" />
             </div>
