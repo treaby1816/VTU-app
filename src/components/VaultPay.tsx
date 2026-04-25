@@ -7,7 +7,7 @@ import {
   ChevronRight, CheckCircle2, XCircle, Clock, RefreshCw, Download,
   Eye, EyeOff, Phone, X, ArrowUpRight, ArrowDownLeft, Copy,
   Search, ChevronDown, Home, CreditCard, Activity, Lock, Wifi,
-  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon,
+  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -22,6 +22,8 @@ import AirtimeModal from "./transactions/AirtimeModal";
 import DataModal from "./transactions/DataModal";
 import FundModal from "./transactions/FundModal";
 import TxTable from "./transactions/TxTable";
+import SettingsPage from "./dashboard/SettingsPage";
+import SupportPage from "./dashboard/SupportPage";
 
 // ─── Responsive hook ─────────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -199,6 +201,8 @@ export default function VaultPay() {
               { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
               { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
               { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
+              { id: "settings", label: "Settings", icon: <Settings size={18} /> },
+              { id: "support", label: "Support", icon: <Info size={18} /> },
               ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
             ].map(item => (
               <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text-muted)", cursor: "pointer", fontWeight: 600, transition: "all .2s" }}>
@@ -343,9 +347,23 @@ export default function VaultPay() {
             </div>
           )}
 
+          {activePage === "settings" && <SettingsPage user={user} isMobile={isMobile} />}
+          {activePage === "support" && <SupportPage isMobile={isMobile} />}
           {activePage === "admin" && user.isAdmin && <AdminPanel isMobile={isMobile} />}
         </div>
       </div>
+
+      {/* Floating WhatsApp Chatbot */}
+      <a href="https://wa.me/2348000000000" target="_blank" rel="noreferrer" style={{
+        position: "fixed", bottom: 24, right: 24, zIndex: 9999,
+        width: 60, height: 60, borderRadius: 30,
+        background: "#25D366", color: "#fff",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: "0 10px 30px rgba(37,211,102,0.4)",
+        cursor: "pointer", transition: "transform 0.2s"
+      }} className="zoom-slow">
+        <MessageCircle size={30} />
+      </a>
 
       {/* Toasts */}
       <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10000, display: "flex", flexDirection: "column", gap: 10 }}>
