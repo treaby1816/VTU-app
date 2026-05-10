@@ -25,6 +25,7 @@ import TxTable from "./transactions/TxTable";
 import SettingsPage from "./dashboard/SettingsPage";
 import SupportPage from "./dashboard/SupportPage";
 import AIChatbot from "./ui/AIChatbot";
+import CursorWanderCard from "./ui/cursor-wander-card";
 
 // ─── Responsive hook ─────────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -326,66 +327,27 @@ export default function VaultPay() {
           {activePage === "dashboard" && (
             <div className="fade-up">
               {/* Virtual ATM Card */}
-              <div style={{ 
-                background: "linear-gradient(135deg, #FEF08A 0%, #EAB308 50%, #CA8A04 100%)", 
-                borderRadius: 24, 
-                padding: "24px 28px", 
-                marginBottom: 32, 
-                boxShadow: "0 20px 40px rgba(234, 179, 8, 0.3)", 
-                color: "#1e293b",
-                position: "relative",
-                overflow: "hidden",
-                minHeight: 220,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                fontFamily: "'Inter', sans-serif"
-              }}>
-                {/* Decorative Blobs */}
-                <div style={{ position: "absolute", top: "10%", left: "30%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)", pointerEvents: "none" }} />
-                <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%)", pointerEvents: "none" }} />
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, marginBottom: 4 }}>Virtual NGN Card</p>
-                    <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: -0.5 }}>{BRAND}</h3>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(0,0,0,0.1)", border: "none", width: 32, height: 32, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#1e293b" }}>
-                      {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
+              <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 24, marginBottom: 32, alignItems: "center", background: "var(--bg-card)", padding: 24, borderRadius: 24, border: "1px solid var(--border)" }}>
+                <div style={{ flex: 1, width: "100%" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                    <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>Virtual NGN Card</h3>
+                    <button onClick={() => setShowBalance(!showBalance)} style={{ background: "rgba(0,212,170,.1)", border: "none", width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+                      {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
-                    <Wifi size={20} style={{ transform: "rotate(90deg)" }} />
                   </div>
-                </div>
-
-                <div style={{ position: "relative", zIndex: 1, marginTop: 10 }}>
-                  <div style={{ width: 44, height: 32, background: "linear-gradient(135deg, #FDE047, #EAB308)", borderRadius: 6, position: "relative", overflow: "hidden", marginBottom: 16 }}>
-                     {/* Chip lines */}
-                     <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(0,0,0,0.2)" }} />
-                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "rgba(0,0,0,0.2)" }} />
-                     <div style={{ position: "absolute", left: "20%", top: 0, bottom: 0, width: 1, background: "rgba(0,0,0,0.2)" }} />
-                     <div style={{ position: "absolute", right: "20%", top: 0, bottom: 0, width: 1, background: "rgba(0,0,0,0.2)" }} />
-                  </div>
-                  <p style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, marginBottom: 2 }}>Available Balance</p>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: 1 }}>
+                  <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 8 }}>Available Balance</p>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, letterSpacing: 1, margin: 0, color: "var(--primary)" }}>
                     {showBalance ? fmtN(balance) : "₦ • • • • •"}
                   </h2>
                 </div>
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", position: "relative", zIndex: 1, marginTop: 16 }}>
-                   <div style={{ display: "flex", gap: 32 }}>
-                     <div>
-                       <p style={{ fontSize: 10, fontWeight: 600, opacity: 0.6, marginBottom: 4 }}>CARDHOLDER</p>
-                       <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>{user.name.toUpperCase()}</p>
-                     </div>
-                     <div>
-                       <p style={{ fontSize: 10, fontWeight: 600, opacity: 0.6, marginBottom: 4 }}>EXPIRES</p>
-                       <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>**/**</p>
-                     </div>
-                   </div>
-                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                     <div style={{ fontFamily: "Arial", fontWeight: 900, fontSize: 20, fontStyle: "italic", letterSpacing: -1 }}>VISA</div>
-                   </div>
+                <div style={{ flexShrink: 0, display: "flex", justifyContent: "center", width: isMobile ? "100%" : "auto" }}>
+                  <CursorWanderCard 
+                    cardholderName={user.name.toUpperCase()} 
+                    width={isMobile ? "320px" : "380px"} 
+                    height={isMobile ? "200px" : "240px"} 
+                    theme={{ primaryColor: "#00D4AA", secondaryColor: "#0D1426", glowColor: "rgba(0, 212, 170, 0.4)" }}
+                    logoText={{ topText: "VAULT", bottomText: "PAY" }}
+                  />
                 </div>
               </div>
               
