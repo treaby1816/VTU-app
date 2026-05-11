@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rate-limit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   // Use IP address as identifier for rate limiting
   const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? '127.0.0.1';

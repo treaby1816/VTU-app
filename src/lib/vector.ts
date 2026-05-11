@@ -1,29 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
+import OpenAI from 'openai';
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Initialize Supabase client
-// Note: In server components/API routes you should use @supabase/ssr, but for simplicity here we use the generic client
-// or whatever client you have defined for your project.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
- * Placeholder function for generating embeddings.
- * In a real scenario, you'd call the OpenAI API (or another provider) here.
+ * Generates embeddings using OpenAI's text-embedding-3-small model.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  // TODO: Replace with actual call to OpenAI embeddings API
-  // Example: 
-  // const response = await openai.embeddings.create({
-  //   model: "text-embedding-3-small",
-  //   input: text,
-  // });
-  // return response.data[0].embedding;
-  
-  console.warn("Using placeholder embedding function. Please configure a real embedding provider.");
-  return new Array(1536).fill(0).map(() => Math.random());
+  try {
+    const response = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input: text.replace(/\n/g, ' '), // recommended by OpenAI
+    });
+    return response.data[0].embedding;
+  } catch (error) {
+    console.error("Error generating embedding:", error);
+    throw error;
+  }
 }
+
 
 /**
  * Helper function to upsert an embedding into Supabase pgvector.
