@@ -1,23 +1,21 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Only create the ratelimit instance if Upstash Redis credentials are provided
-const hasRedisCredentials = !!process.env.UPSTASH_REDIS_REST_URL && !!process.env.UPSTASH_REDIS_REST_TOKEN;
+// Only create the ratelimit instance if Upstash Redis credentials are provided and valid
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const hasValidRedis = !!redisUrl && redisUrl.startsWith('https://') && !!redisToken;
 
 // Create a new ratelimiter, that allows 10 requests per 10 seconds
-export const rateLimit = hasRedisCredentials 
+export const rateLimit = hasValidRedis 
   ? new Ratelimit({
       redis: Redis.fromEnv(),
       limiter: Ratelimit.slidingWindow(10, "10 s"),
       analytics: true,
-      /**
-       * Optional prefix for the keys used in redis. This is useful if you want to share a redis
-       * instance with other applications and want to avoid key collisions. The default prefix is
-       * "@upstash/ratelimit"
-       */ 
       prefix: "@upstash/ratelimit",
     })
   : null;
+
 
 /**
  * Helper middleware-like function to limit requests.
