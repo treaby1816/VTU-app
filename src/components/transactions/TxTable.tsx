@@ -53,6 +53,11 @@ export default function TxTable({ transactions, limit, onDownload, onRetry, show
                   <div>
                     <p style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>{tx.service}</p>
                     <p style={{ color: "var(--text-muted)", fontSize: 11, marginTop: 2 }}>ID: {tx.id.slice(0, 12)}...</p>
+                    {tx.provider && (
+                      <span style={{ display: "inline-block", marginTop: 4, padding: "2px 6px", background: "rgba(255,255,255,0.05)", borderRadius: 4, fontSize: 9, color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.1)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                        Routed via {tx.provider}
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td style={{ padding: "14px 20px" }}>

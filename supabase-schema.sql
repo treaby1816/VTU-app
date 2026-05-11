@@ -137,3 +137,31 @@ ALTER TABLE public.transactions
 -- Index for provider analytics
 CREATE INDEX IF NOT EXISTS idx_transactions_provider 
   ON public.transactions(provider);
+
+-- ── 9. Enterprise Telemetry & Provider Health ─────────────────────────────
+
+-- Table to store global provider health status across serverless instances
+CREATE TABLE IF NOT EXISTS public.provider_health (
+    provider_name TEXT PRIMARY KEY,
+    status TEXT DEFAULT 'healthy', -- 'healthy' or 'cooldown'
+    failed_at TIMESTAMP WITH TIME ZONE,
+    cooldown_until TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- Table to log all API requests and their latency
+CREATE TABLE IF NOT EXISTS public.api_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider TEXT NOT NULL,
+    service_type TEXT, -- 'airtime' or 'data'
+    request_payload JSONB,
+    response_payload JSONB,
+    status_code INTEGER,
+    is_success BOOLEAN NOT NULL,
+    latency_ms INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- Indexes for querying API telemetry
+CREATE INDEX IF NOT EXISTS idx_api_logs_provider ON public.api_logs(provider);
+CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON public.api_logs(created_at);

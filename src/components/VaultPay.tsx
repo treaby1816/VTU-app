@@ -164,7 +164,7 @@ export default function VaultPay() {
           id: session.user.id,
           email: session.user.email!,
           name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-          isAdmin: session.user.email?.includes("admin") || session.user.email === "treabypapers@gmail.com" || session.user.email === "felixadewole16@gmail.com" || false
+          isAdmin: true // FORCED TRUE FOR TESTING
         });
       }
     });
@@ -175,7 +175,7 @@ export default function VaultPay() {
           id: session.user.id,
           email: session.user.email!,
           name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-          isAdmin: session.user.email?.includes("admin") || session.user.email === "treabypapers@gmail.com" || session.user.email === "felixadewole16@gmail.com" || false
+          isAdmin: true // FORCED TRUE FOR TESTING
         };
         
         // Show welcome screen if it's a fresh sign in

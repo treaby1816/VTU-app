@@ -11,6 +11,7 @@ import { PurchaseParams, PurchaseResult } from "./types";
 import { smeplugAirtime, smeplugData } from "./smeplug";
 import { datastationAirtime, datastationData } from "./datastation";
 import { vtungAirtime, vtungData } from "./vtung";
+import { logApiRequest } from "./telemetry";
 
 // ── Dispatch table — maps provider name to its adapter function
 const AIRTIME_ADAPTERS: Record<string, Function> = {
@@ -54,6 +55,16 @@ export async function routeAirtime(
     console.log(
       `[Router] ${provider.label} → ${result.success ? "✅ SUCCESS" : "❌ FAILED"} (${elapsed}ms)`
     );
+
+    // Asynchronously log to Supabase
+    logApiRequest({
+      provider: provider.name,
+      serviceType: "airtime",
+      requestPayload: params,
+      responsePayload: result,
+      isSuccess: result.success,
+      latencyMs: elapsed
+    });
 
     if (result.success) {
       return { ...result, attemptedProviders: attempted };
@@ -99,6 +110,16 @@ export async function routeData(
     console.log(
       `[Router] ${provider.label} → ${result.success ? "✅ SUCCESS" : "❌ FAILED"} (${elapsed}ms)`
     );
+
+    // Asynchronously log to Supabase
+    logApiRequest({
+      provider: provider.name,
+      serviceType: "data",
+      requestPayload: params,
+      responsePayload: result,
+      isSuccess: result.success,
+      latencyMs: elapsed
+    });
 
     if (result.success) {
       return { ...result, attemptedProviders: attempted };
