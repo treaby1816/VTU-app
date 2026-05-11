@@ -14,6 +14,7 @@ export const viewport: Viewport = {
 };
 
 import QueryProvider from "@/components/providers/QueryProvider";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
 
 export default function RootLayout({
   children,
@@ -32,9 +33,11 @@ export default function RootLayout({
         <script src="https://js.paystack.co/v1/inline.js" async></script>
       </head>
       <body style={{ backgroundColor: "#080C14", margin: 0 }}>
-        <QueryProvider>
-          {children}
-        </QueryProvider>
+        <PostHogProvider>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

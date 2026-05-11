@@ -178,9 +178,10 @@ export default function VaultPay() {
           isAdmin: true // FORCED TRUE FOR TESTING
         };
         
-        // Show welcome screen if it's a fresh sign in
-        if (event === 'SIGNED_IN') {
+        // Show welcome screen only if they haven't seen it in this session yet
+        if (event === 'SIGNED_IN' && !sessionStorage.getItem('hasSeenWelcome')) {
           setShowWelcome(true);
+          sessionStorage.setItem('hasSeenWelcome', 'true');
         }
         
         setUser(userData);

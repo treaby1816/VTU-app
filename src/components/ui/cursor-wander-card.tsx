@@ -35,7 +35,8 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const [isHovered, setIsHovered] = useState(false)
-  const [time, setTime] = useState(0)
+  // Removed React state 'time' to prevent 60fps re-rendering loop which freezes the card
+  const time = 0;
   const cardRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<number>(0)
@@ -67,8 +68,8 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
 
   // Animation for time-based effects
   const animateTime = () => {
-    setTime((prev) => prev + 0.01)
-    timeAnimationRef.current = requestAnimationFrame(animateTime)
+    // Removed setTime to prevent performance degradation and lagging mouse events
+    // timeAnimationRef.current = requestAnimationFrame(animateTime)
   }
 
   useEffect(() => {
