@@ -127,3 +127,13 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.profiles TO authenticated;
 GRANT SELECT, INSERT ON public.transactions TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_wallet_balance TO authenticated, service_role;
+
+-- ── 8. Provider Tracking ──────────────────────────────────────────────────
+-- Add provider tracking columns to transactions
+ALTER TABLE public.transactions
+  ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'vtung',
+  ADD COLUMN IF NOT EXISTS provider_ref TEXT;
+
+-- Index for provider analytics
+CREATE INDEX IF NOT EXISTS idx_transactions_provider 
+  ON public.transactions(provider);

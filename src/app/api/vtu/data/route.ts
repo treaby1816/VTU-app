@@ -1,29 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { purchaseData, generateVTPassRef, VTUNetwork } from "@/lib/vtu";
+import { routeData } from "@/lib/providers/router";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-// Client will be initialized inside the handler to prevent build errors
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const DataSchema = z.object({
-  user_id:  z.string().uuid(),
-  network:  z.enum(["mtn", "airtel", "glo", "9mobile"]),
-  phone:    z.string().regex(/^0[789][01]\d{8}$/, "Invalid Nigerian phone number"),
-  plan_id:  z.string().min(1),
-  plan_name: z.string().min(1),  // e.g. "1GB"
-  amount:   z.number().min(50).max(100000),
+  user_id:   z.string().uuid(),
+  network:   z.enum(["mtn", "airtel", "glo", "9mobile"]),
+  phone:     z.string().regex(/^0[789][01]\d{8}$/, "Invalid phone"),
+  plan_id:   z.string().min(1),
+  plan_name: z.string().min(1),
+  amount:    z.number().min(50).max(100000),
 });
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient(
-    (process.env as any).NEXT_PUBLIC_SUPABASE_URL!,
-    (process.env as any).SUPABASE_SERVICE_ROLE_KEY!
-  );
-
   try {
     const body = await req.json();
-
     const parsed = DataSchema.safeParse(body);
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Validation failed", issues: parsed.error.flatten() },
@@ -33,64 +31,52 @@ export async function POST(req: NextRequest) {
 
     const { user_id, network, phone, plan_id, plan_name, amount } = parsed.data;
 
-    // ── 2. Verify Session (Security Fix) ──────────────────────────────────
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace("Bearer ", "")
+    const { data: balance } = await supabase.rpc(
+      "get_wallet_balance", { p_user_id: user_id }
     );
-
-    if (authError || !user || user.id !== user_id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!balance || balance < amount) {
+      return NextResponse.json(
+        { error: "Insufficient wallet balance" },
+        { status: 400 }
+      );
     }
 
-    // Balance check
-    const { data: balanceData } = await supabase.rpc("get_wallet_balance", { p_user_id: user_id });
-    if (balanceData === null || balanceData < amount) {
-      return NextResponse.json({ error: "Insufficient wallet balance" }, { status: 400 });
-    }
+    const ref = "DAT" + Date.now().toString(36).toUpperCase() +
+                Math.random().toString(36).slice(2, 5).toUpperCase();
 
-    const ref = generateVTPassRef();
-
-    // Create pending transaction
     const { data: txData, error: txError } = await supabase
       .from("transactions")
       .insert({
-        user_id,
-        type: "debit",
+        user_id, type: "debit",
         service: `${network.toUpperCase()} Data – ${plan_name}`,
-        amount,
-        status: "pending",
-        phone,
-        network: network.toUpperCase(),
-        ref,
+        amount, status: "pending", phone,
+        network: network.toUpperCase(), ref,
       })
-      .select()
-      .single();
+      .select().single();
 
     if (txError || !txData) {
-      return NextResponse.json({ error: "Could not create transaction" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Could not create transaction" },
+        { status: 500 }
+      );
     }
 
-    // Call VTU provider
-    const vtuResponse = await purchaseData({ 
-      network: network as VTUNetwork, 
-      phone, 
-      variation_code: plan_id, 
-      ref 
+    // ── SMART HOP ───────────────────────────────────────────────
+    const result = await routeData({
+      network, phone, planId: plan_id, planName: plan_name, ref
     });
-    
-    // VTPass success code
-    const success = vtuResponse?.code === "000" || vtuResponse?.content?.transactions?.status === "delivered";
+    // ────────────────────────────────────────────────────────────
 
-    // Update status
-    await supabase.from("transactions").update({ status: success ? "success" : "failed" }).eq("id", txData.id);
+    await supabase
+      .from("transactions")
+      .update({
+        status: result.success ? "success" : "failed",
+        provider: result.provider,
+        provider_ref: result.providerRef,
+      })
+      .eq("id", txData.id);
 
-    // Refund on failure
-    if (!success) {
+    if (!result.success) {
       await supabase.from("transactions").insert({
         user_id, type: "credit",
         service: `Refund – ${network.toUpperCase()} Data`,
@@ -100,13 +86,18 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      success,
-      transaction: { ...txData, status: success ? "success" : "failed" },
-      message: success ? "Data bundle activated" : "Data failed — wallet refunded",
+      success: result.success,
+      transaction_id: txData.id,
+      provider_used: result.provider,
+      providers_tried: result.attemptedProviders,
+      message: result.message,
     });
 
   } catch (err) {
-    console.error("[VTU Data] Unhandled error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[Data API] Error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

@@ -8,7 +8,9 @@ import TxTable from "../transactions/TxTable";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
-  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity" | "providers">("overview");
+  const [providerStats, setProviderStats] = useState<any[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0, totalInflow: 0, totalOutflow: 0 });
@@ -52,6 +54,18 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
     fetchAdminData();
   }, []);
 
+  useEffect(() => {
+    if (tab === "providers") {
+      setLoadingProviders(true);
+      fetch("/api/admin/providers")
+        .then(res => res.json())
+        .then(data => {
+           if (data.providers) setProviderStats(data.providers);
+        })
+        .finally(() => setLoadingProviders(false));
+    }
+  }, [tab]);
+
   if (loading) {
     return <div style={{ padding: 40, textAlign: "center", color: "#64748b" }}>Loading admin data...</div>;
   }
@@ -89,7 +103,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content", overflowX: "auto", maxWidth: "100%" }}>
-        {(["overview", "users", "transactions", "activity", "pricing"] as const).map(t => (
+        {(["overview", "users", "transactions", "activity", "pricing", "providers"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{t}</button>
         ))}
       </div>
@@ -239,6 +253,84 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
               <button onClick={() => alert("Pricing configuration module coming soon!")} style={{ width: "100%", padding: 12, borderRadius: 10, background: "rgba(0,212,170,.1)", color: "var(--primary)", border: "1px solid var(--border)", fontWeight: 700, cursor: "pointer" }}>Adjust Pricing</button>
             </div>
           ))}
+        </div>
+      )}
+
+      {tab === "providers" && (
+        <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+             <div>
+               <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 6 }}>Provider Health</h3>
+               <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Monitor and manage VTU provider routing logic.</p>
+             </div>
+             <button onClick={() => {
+                setLoadingProviders(true);
+                fetch("/api/admin/providers").then(res => res.json()).then(data => setProviderStats(data.providers || [])).finally(() => setLoadingProviders(false));
+             }} style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(0,212,170,.1)", color: "var(--primary)", border: "none", fontWeight: 600, cursor: "pointer" }}>Refresh</button>
+          </div>
+
+          {loadingProviders ? (
+             <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>Loading provider stats...</div>
+          ) : (
+             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+               {providerStats.sort((a, b) => a.priority - b.priority).map((p) => {
+                  const rateColor = p.last24h.successRate >= 80 ? "#10b981" : (p.last24h.successRate >= 50 ? "#f59e0b" : "#f43f5e");
+                  
+                  return (
+                    <div key={p.name} style={{ background: "#0D1426", border: "1px solid rgba(255,255,255,.05)", borderRadius: 12, padding: 20 }}>
+                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                               <h4 style={{ fontFamily: "Syne, sans-serif", fontSize: 16, margin: 0 }}>{p.label}</h4>
+                               <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(255,255,255,0.1)", color: "var(--text-muted)" }}>
+                                 Priority {p.priority} {p.priority === 1 && "(Primary)"}
+                               </span>
+                               {p.supportsSME ? (
+                                  <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(16,185,129,0.1)", color: "#10b981" }}>SME ✓</span>
+                               ) : (
+                                  <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(255,255,255,0.05)", color: "#94a3b8" }}>Standard</span>
+                               )}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                               <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.hasKey ? "#10b981" : "#f43f5e" }} />
+                               <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{p.hasKey ? "API Key Set" : "No Key — Add to .env.local"}</span>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                             <span style={{ fontSize: 13, fontWeight: 600 }}>{p.markup}% Markup</span>
+                          </div>
+                       </div>
+
+                       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 2fr 1fr", gap: 16, alignItems: "center" }}>
+                          <div>
+                            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Last 24h Tx</p>
+                            <p style={{ fontSize: 18, fontWeight: 700 }}>{p.last24h.total}</p>
+                          </div>
+                          
+                          <div>
+                             <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 8 }}>
+                               Success Rate ({p.last24h.successRate}%)
+                             </p>
+                             <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
+                                <div style={{ height: "100%", width: `${p.last24h.successRate}%`, background: rateColor, transition: "width 0.3s" }} />
+                             </div>
+                             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                                <span style={{ fontSize: 11, color: "#10b981" }}>{p.last24h.success} OK</span>
+                                <span style={{ fontSize: 11, color: "#f43f5e" }}>{p.last24h.failed} Failed</span>
+                             </div>
+                          </div>
+
+                          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                             <button onClick={() => alert("POST /api/admin/providers logic to be implemented for priority reordering.")} style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                                Set as Primary
+                             </button>
+                          </div>
+                       </div>
+                    </div>
+                  );
+               })}
+             </div>
+          )}
         </div>
       )}
     </div>
