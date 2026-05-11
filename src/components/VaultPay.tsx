@@ -178,10 +178,13 @@ export default function VaultPay() {
           isAdmin: true // FORCED TRUE FOR TESTING
         };
         
-        // Show welcome screen only if they haven't seen it in this session yet
-        if (event === 'SIGNED_IN' && !sessionStorage.getItem('hasSeenWelcome')) {
+        // Use localStorage to persist across wake/sleep and reloads
+        // Clear this on explicit sign out
+        const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+        
+        if (event === 'SIGNED_IN' && !hasSeenWelcome) {
           setShowWelcome(true);
-          sessionStorage.setItem('hasSeenWelcome', 'true');
+          localStorage.setItem('hasSeenWelcome', 'true');
         }
         
         setUser(userData);
@@ -196,6 +199,7 @@ export default function VaultPay() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem('hasSeenWelcome'); // Reset welcome flag for next login
     logout();
     setActivePage("dashboard");
     setModal(null);

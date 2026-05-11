@@ -24,6 +24,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         posthog.identify(user.id, {
           email: user.email,
+          name: user.user_metadata?.full_name,
+          phone: user.user_metadata?.phone,
         });
       } else {
         posthog.reset();
@@ -38,6 +40,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         if (event === 'SIGNED_IN' && session?.user) {
           posthog.identify(session.user.id, {
             email: session.user.email,
+            name: session.user.user_metadata?.full_name,
+            phone: session.user.user_metadata?.phone,
           });
         } else if (event === 'SIGNED_OUT') {
           posthog.reset();
