@@ -164,14 +164,11 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
           {/* Top Row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 48, height: 48, borderRadius: 12,
-                background: "linear-gradient(to bottom right, #00D4AA, #00b896)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 8px 20px rgba(0,212,170,0.3)",
-              }}>
-                <Zap size={24} color="#000" fill="#000" />
-              </div>
+              <img 
+                src="/images/vaultpay_logo.png" 
+                alt="VaultPay Logo" 
+                style={{ width: 48, height: 48, objectFit: "contain" }}
+              />
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: 18, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.05em" }}>{logoText.topText}</span>
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#00D4AA", letterSpacing: "0.3em", lineHeight: 1 }}>{logoText.bottomText}</span>

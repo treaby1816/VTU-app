@@ -488,8 +488,11 @@ export default function VaultPay() {
     if (isMobile) setDrawerOpen(false);
   };
 
-  if (showSplash) return <SplashScreen onDone={() => setShowSplash(false)} />;
-  if (showWelcome && user) return <LoginSuccessScreen userName={user.name} onDone={() => setShowWelcome(false)} />;
+  const handleSplashDone = useCallback(() => setShowSplash(false), []);
+  const handleWelcomeDone = useCallback(() => setShowWelcome(false), []);
+
+  if (showSplash) return <SplashScreen onDone={handleSplashDone} />;
+  if (showWelcome && user) return <LoginSuccessScreen userName={user.name} onDone={handleWelcomeDone} />;
   if (!user) return <AuthScreen isMobile={isMobile} />;
 
   return (
