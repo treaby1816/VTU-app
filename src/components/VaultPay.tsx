@@ -341,6 +341,22 @@ export default function VaultPay() {
       {modal === "airtime" && <AirtimeModal onClose={() => setModal(null)} balance={balance} onSubmit={handleTransaction} isMobile={isMobile} />}
       {modal === "data" && <DataModal onClose={() => setModal(null)} balance={balance} onSubmit={handleTransaction} isMobile={isMobile} />}
       {modal === "fund" && <FundModal onClose={() => setModal(null)} onSubmit={handleTransaction} isMobile={isMobile} />}
+      {modal === "logout" && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }} onClick={() => setModal(null)} />
+          <div style={{ position: "relative", background: "#0D1426", border: "1px solid var(--border)", padding: 32, borderRadius: 24, width: "90%", maxWidth: 400, textAlign: "center", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(255,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <LogOut size={32} color="#ff4444" />
+            </div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 10 }}>Are you sure?</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 30 }}>Do you really want to log out of your account?</p>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button onClick={() => setModal(null)} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+              <button onClick={handleLogout} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "#ff4444", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sidebar / Nav */}
       {!isMobile && (
@@ -369,7 +385,7 @@ export default function VaultPay() {
               </button>
             ))}
           </div>
-          <button onClick={handleLogout} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600 }}>
+          <button onClick={() => setModal("logout")} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600 }}>
             <LogOut size={18} />
             {!sidebarCollapsed && <span>Logout</span>}
           </button>
@@ -408,7 +424,7 @@ export default function VaultPay() {
                 </button>
               ))}
             </div>
-            <button onClick={handleLogout} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600 }}>
+            <button onClick={() => setModal("logout")} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: "transparent", color: "#ff4444", cursor: "pointer", fontWeight: 600 }}>
               <LogOut size={18} />
               <span>Logout</span>
             </button>

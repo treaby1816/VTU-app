@@ -38,9 +38,16 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setForm(p => ({ ...p, email: savedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
 
   const set = (k: string) => (v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -148,6 +155,12 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
           sessionStorage.removeItem("justLoggedIn");
           throw signInRes.error;
         }
+        
+        if (rememberMe) {
+          localStorage.setItem('rememberedEmail', form.email);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
       }
     } catch (err: any) {
       setAuthError(err.message || "Authentication failed.");
@@ -251,7 +264,11 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
               )}
             </div>
             {mode === "login" && (
-              <div style={{ textAlign: "right", marginTop: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", fontSize: 12, cursor: "pointer" }}>
+                  <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} style={{ accentColor: "var(--primary)", cursor: "pointer" }} />
+                  Remember me
+                </label>
                 <span onClick={() => setMode("forgot")} style={{ color: "var(--primary)", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>Forgot password?</span>
               </div>
             )}
