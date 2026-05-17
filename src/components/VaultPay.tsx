@@ -7,7 +7,7 @@ import {
   ChevronRight, CheckCircle2, XCircle, Clock, RefreshCw, Download,
   Eye, EyeOff, Phone, X, ArrowUpRight, ArrowDownLeft, Copy,
   Search, ChevronDown, Home, CreditCard, Activity, Lock, Wifi,
-  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft
+  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft, Award
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -26,6 +26,81 @@ import SettingsPage from "./dashboard/SettingsPage";
 import SupportPage from "./dashboard/SupportPage";
 import AIChatbot from "./ui/AIChatbot";
 import CursorWanderCard from "./ui/cursor-wander-card";
+
+// Whitelabel Reseller Onboarding Component
+const ResellerPage = memo(({ user }: { user: any }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(user.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const whatsappMsg = `Hello VaultPay Support, I would like to upgrade my account and activate my custom whitelabel reseller VTU platform!\n\nMy Details:\n- Name: ${user.name}\n- User UUID: ${user.id}\n- Brand Name: [My Brand Name]\n- Desired Subdomain: [mybrand]`;
+  const whatsappUrl = `https://wa.me/2349071066072?text=${encodeURIComponent(whatsappMsg)}`;
+
+  return (
+    <div className="fade-up" style={{ maxWidth: 800, margin: "0 auto", paddingBottom: 40 }}>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(0,212,170,.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+          <Award size={32} color="var(--primary)" />
+        </div>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 28, color: "var(--text)" }}>Become a Whitelabel Reseller</h2>
+        <p style={{ color: "var(--text-muted)", fontSize: 14, marginTop: 4 }}>Launch your custom branded VTU website and earn passive income!</p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
+        {/* Why become a reseller? */}
+        <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)" }}>
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>🚀 Reseller Brand Features</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+            {[
+              { t: "Custom Branding", d: "Your custom business name, logo, HSL color palette, and custom sub-domain/domain setup." },
+              { t: "Double-Wallet Ledger", d: "Prepaid automatic balance splits. Customers pay retail, and you pay wholesale, keeping 100% of the markups!" },
+              { t: "Automated VTU API Routing", d: "Zero server configurations. Purchases route instantly through active high-speed providers." },
+              { t: "Isolated Tenancy Security", d: "Full Row-Level Security (RLS). Resellers can only see transaction reports of their own users." }
+            ].map((f, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.02)", padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
+                <h4 style={{ color: "var(--primary)", fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{f.t}</h4>
+                <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.5 }}>{f.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Upgrade Activation */}
+        <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)", textAlign: "center" }}>
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Ready to Activate?</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Upgrading is automated. Just copy your Profile UUID below and click the button to message our Admin Support on WhatsApp for provisioning!</p>
+
+          <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 20px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, maxWidth: 500, margin: "0 auto 24px", textAlign: "left" }}>
+            <div>
+              <span style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Your Profile User ID (UUID)</span>
+              <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 700, fontFamily: "monospace", marginTop: 4, wordBreak: "break-all" }}>{user.id}</p>
+            </div>
+            <button 
+              onClick={handleCopy}
+              style={{ padding: "8px 16px", borderRadius: 8, background: copied ? "rgba(16,185,129,0.15)" : "var(--primary)", border: "none", color: copied ? "#10b981" : "#000", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+            >
+              {copied ? "Copied! ✓" : "Copy ID"}
+            </button>
+          </div>
+
+          <a 
+            href={whatsappUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#25D366", color: "#fff", padding: "14px 28px", borderRadius: 12, fontWeight: 700, textDecoration: "none", fontSize: 14, boxShadow: "0 8px 24px rgba(37,211,102,.3)" }}
+          >
+            <MessageCircle size={18} fill="#fff" /> Contact Support on WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+});
+ResellerPage.displayName = "ResellerPage";
 
 // ─── Responsive hook ─────────────────────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -251,7 +326,7 @@ export default function VaultPay() {
               { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
               { id: "settings", label: "Settings", icon: <Settings size={18} /> },
               { id: "support", label: "Support", icon: <Info size={18} /> },
-              ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
+              ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [{ id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> }])
             ].map(item => (
               <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text-muted)", cursor: "pointer", fontWeight: 600, transition: "all .2s" }}>
                 {item.icon}
@@ -289,7 +364,7 @@ export default function VaultPay() {
                 { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
                 { id: "settings", label: "Settings", icon: <Settings size={18} /> },
                 { id: "support", label: "Support", icon: <Info size={18} /> },
-                ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
+                ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [{ id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> }])
               ].map(item => (
                 <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text)", cursor: "pointer", fontWeight: 600 }}>
                   {item.icon}
@@ -412,6 +487,7 @@ export default function VaultPay() {
 
           {activePage === "settings" && <SettingsPage user={user} isMobile={isMobile} />}
           {activePage === "support" && <SupportPage isMobile={isMobile} />}
+          {activePage === "reseller" && !user.isAdmin && <ResellerPage user={user} />}
           {activePage === "admin" && user.isAdmin && <AdminPanel isMobile={isMobile} />}
         </div>
       </div>
