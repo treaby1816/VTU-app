@@ -178,13 +178,11 @@ export default function VaultPay() {
           isAdmin: true // FORCED TRUE FOR TESTING
         };
         
-        // Use localStorage to persist across wake/sleep and reloads
-        // Clear this on explicit sign out
-        const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
-        
-        if (event === 'SIGNED_IN' && !hasSeenWelcome) {
+        // Only show welcome overlay if this is a manual user-initiated sign in
+        const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+        if (event === 'SIGNED_IN' && justLoggedIn === 'true') {
           setShowWelcome(true);
-          localStorage.setItem('hasSeenWelcome', 'true');
+          sessionStorage.removeItem('justLoggedIn');
         }
         
         setUser(userData);

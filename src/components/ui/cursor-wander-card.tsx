@@ -34,8 +34,62 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
+  const mousePos = useRef({ x: 0, y: 0 })
+  const frameRef = useRef<number>()
 
-  // Handle mouse movement for 3D tilt
+  // Lerp value states for seamless, physics-based movement transitions
+  const currentRotX = useRef(0)
+  const currentRotY = useRef(0)
+  const currentScale = useRef(1)
+
+  useEffect(() => {
+    let startTime = Date.now()
+
+    const updateCard = () => {
+      if (!cardRef.current) {
+        frameRef.current = requestAnimationFrame(updateCard)
+        return
+      }
+
+      let targetRotX = 0
+      let targetRotY = 0
+      let targetScale = 1
+
+      if (isHovered) {
+        // Compute targets based on absolute cursor distance to the card center
+        const rect = cardRef.current.getBoundingClientRect()
+        const centerX = rect.width / 2
+        const centerY = rect.height / 2
+        
+        targetRotX = (mousePos.current.y - centerY) / 8
+        targetRotY = -(mousePos.current.x - centerX) / 8
+        targetScale = 1.05
+      } else {
+        // Gentle cosmic 3D floating animation when not hovered
+        const time = (Date.now() - startTime) / 1000
+        targetRotX = Math.sin(time * 0.8) * 8
+        targetRotY = Math.cos(time * 0.6) * 12
+        targetScale = 1.0
+      }
+
+      // Physics interpolation (lerp)
+      const lerpFactor = 0.08 // smooth speed multiplier
+      currentRotX.current += (targetRotX - currentRotX.current) * lerpFactor
+      currentRotY.current += (targetRotY - currentRotY.current) * lerpFactor
+      currentScale.current += (targetScale - currentScale.current) * lerpFactor
+
+      // Apply highly optimized 3D transforms directly to GPU layer
+      cardRef.current.style.transform = `perspective(1000px) rotateX(${currentRotX.current}deg) rotateY(${currentRotY.current}deg) scale3d(${currentScale.current}, ${currentScale.current}, ${currentScale.current})`
+
+      frameRef.current = requestAnimationFrame(updateCard)
+    }
+
+    frameRef.current = requestAnimationFrame(updateCard)
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current)
+    }
+  }, [isHovered])
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
     
@@ -43,27 +97,24 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
     
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
+    // Save absolute coordinates to cursor position reference
+    mousePos.current = { x, y }
     
-    const rotateX = (y - centerY) / 10
-    const rotateY = -(x - centerX) / 10
-    
-    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`
-    
-    // Update glare position
+    // Update dynamic glass glare overlay position
     const glare = cardRef.current.querySelector('.card-glare') as HTMLDivElement
     if (glare) {
       glare.style.opacity = '1'
-      glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.3) 0%, transparent 80%)`
+      glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.25) 0%, transparent 80%)`
     }
+  }
+
+  const handleMouseEnter = () => {
+    setIsHovered(true)
   }
 
   const handleMouseLeave = () => {
     setIsHovered(false)
-    if (!cardRef.current) return
-    cardRef.current.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`
-    const glare = cardRef.current.querySelector('.card-glare') as HTMLDivElement
+    const glare = cardRef.current?.querySelector('.card-glare') as HTMLDivElement
     if (glare) glare.style.opacity = '0'
   }
 
@@ -75,9 +126,9 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`card-body relative w-full h-full rounded-[24px] cursor-pointer transition-all duration-500 ease-out preserve-3d ${!isHovered ? 'animate-wander' : ''}`}
+        className="card-body relative w-full h-full rounded-[24px] cursor-pointer transition-all duration-500 ease-out preserve-3d"
         style={{
           background: "#050A18",
           border: "1px solid rgba(255,255,255,0.1)",
@@ -138,18 +189,6 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
       <style dangerouslySetInnerHTML={{ __html: `
         .preserve-3d {
           transform-style: preserve-3d;
-        }
-        
-        @keyframes wander {
-          0% { transform: perspective(1000px) rotateX(10deg) rotateY(15deg) rotateZ(2deg); }
-          25% { transform: perspective(1000px) rotateX(-5deg) rotateY(10deg) rotateZ(-1deg); }
-          50% { transform: perspective(1000px) rotateX(10deg) rotateY(-10deg) rotateZ(2deg); }
-          75% { transform: perspective(1000px) rotateX(-5deg) rotateY(-15deg) rotateZ(-2deg); }
-          100% { transform: perspective(1000px) rotateX(10deg) rotateY(15deg) rotateZ(2deg); }
-        }
-
-        .animate-wander {
-          animation: wander 12s ease-in-out infinite;
         }
 
         .nebula-bg {

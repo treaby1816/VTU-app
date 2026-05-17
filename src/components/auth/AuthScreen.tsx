@@ -78,6 +78,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
+      sessionStorage.setItem("justLoggedIn", "true");
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -143,6 +144,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
           password: form.password,
         });
         if (error) throw error;
+        sessionStorage.setItem("justLoggedIn", "true");
       }
     } catch (err: any) {
       setAuthError(err.message || "Authentication failed.");

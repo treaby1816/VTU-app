@@ -201,3 +201,85 @@ FROM public.transactions
 WHERE type = 'debit'
 GROUP BY provider
 ORDER BY total_margin DESC;
+
+-- ── 11. Multi-Tenant Whitelabel Reseller Extensions ───────────────────────
+
+-- A. Tenants Table
+CREATE TABLE IF NOT EXISTS public.tenants (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name           TEXT NOT NULL,
+  subdomain      TEXT UNIQUE NOT NULL,                       -- e.g., 'mobipay' (for mobipay.vaultpay.com)
+  custom_domain  TEXT UNIQUE,                                 -- e.g., 'vtu.mobipay.com'
+  logo_url       TEXT,
+  primary_color  TEXT DEFAULT '#00D4AA',
+  parent_id      UUID REFERENCES public.profiles(id) ON DELETE SET NULL,  -- The reseller profile owner
+  is_active      BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- B. Tenant Pricing Table
+-- This stores the custom retail and wholesale price per bundle/service for each reseller
+CREATE TABLE IF NOT EXISTS public.tenant_pricing (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  service_type    TEXT NOT NULL CHECK (service_type IN ('airtime', 'data')),
+  service_name    TEXT NOT NULL,              -- e.g. 'MTN_SME_1GB', 'AIRTIME_MTN'
+  retail_price    NUMERIC(12, 2) NOT NULL CHECK (retail_price >= 0),
+  wholesale_price NUMERIC(12, 2) NOT NULL CHECK (wholesale_price >= 0),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(tenant_id, service_type, service_name)
+);
+
+-- C. Add tenant_id columns to Profiles and Transactions
+ALTER TABLE public.profiles 
+  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL;
+
+ALTER TABLE public.transactions 
+  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL;
+
+-- D. Index tenant fields for performance
+CREATE INDEX IF NOT EXISTS idx_profiles_tenant ON public.profiles(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_tenant ON public.transactions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_subdomain ON public.tenants(subdomain);
+CREATE INDEX IF NOT EXISTS idx_tenants_custom_domain ON public.tenants(custom_domain);
+
+-- E. RLS Policy Updates for Multi-Tenancy
+
+-- Allow anonymous and authenticated select on Tenants so middleware can load domain branding
+ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can select active tenants" ON public.tenants;
+CREATE POLICY "Anyone can select active tenants"
+  ON public.tenants FOR SELECT
+  USING (is_active = TRUE);
+
+-- Update Profiles RLS:
+-- 1. Users can select own profile (pre-existing)
+-- 2. Resellers can see profiles of users registered under their tenant
+DROP POLICY IF EXISTS "Resellers can view tenant profiles" ON public.profiles;
+CREATE POLICY "Resellers can view tenant profiles"
+  ON public.profiles FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.tenants
+      WHERE tenants.id = profiles.tenant_id AND tenants.parent_id = auth.uid()
+    )
+  );
+
+-- Update Transactions RLS:
+-- 1. Users can select own transactions (pre-existing)
+-- 2. Resellers can see transactions under their tenant
+DROP POLICY IF EXISTS "Resellers can view tenant transactions" ON public.transactions;
+CREATE POLICY "Resellers can view tenant transactions"
+  ON public.transactions FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.tenants
+      WHERE tenants.id = transactions.tenant_id AND tenants.parent_id = auth.uid()
+    )
+  );
+
+-- Grant privileges to authenticated role for new tables
+GRANT SELECT ON public.tenants TO authenticated, anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.tenant_pricing TO authenticated;
+
