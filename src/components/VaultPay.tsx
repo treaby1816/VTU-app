@@ -540,7 +540,7 @@ export default function VaultPay() {
           )}
 
           {activePage === "settings" && <SettingsPage user={user} isMobile={isMobile} />}
-          {activePage === "support" && <SupportPage isMobile={isMobile} />}
+          {activePage === "support" && <SupportPage user={user} isMobile={isMobile} />}
           {activePage === "reseller" && <ResellerPage user={user} />}
           {activePage === "admin" && user.isAdmin && <AdminPanel isMobile={isMobile} />}
         </div>

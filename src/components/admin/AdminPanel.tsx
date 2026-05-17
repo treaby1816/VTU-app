@@ -8,11 +8,13 @@ import TxTable from "../transactions/TxTable";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
-  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity" | "providers" | "resellers">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity" | "providers" | "resellers" | "tickets">("overview");
   const [providerStats, setProviderStats] = useState<any[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
   const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0, totalInflow: 0, totalOutflow: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -42,6 +44,33 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
       console.error(err);
     } finally {
       setLoadingResellers(false);
+    }
+  };
+
+  const fetchTickets = async () => {
+    setLoadingTickets(true);
+    try {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*, profiles(full_name, email)")
+        .order("created_at", { ascending: false });
+      if (data) setTickets(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  const handleUpdateTicketStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .update({ status })
+        .eq("id", id);
+      if (!error) fetchTickets();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -176,6 +205,9 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
     if (tab === "resellers") {
       fetchResellers();
     }
+    if (tab === "tickets") {
+      fetchTickets();
+    }
   }, [tab]);
 
   if (loading) {
@@ -215,7 +247,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content", overflowX: "auto", maxWidth: "100%" }}>
-        {(["overview", "users", "transactions", "activity", "pricing", "providers", "resellers"] as const).map(t => (
+        {(["overview", "users", "transactions", "activity", "pricing", "providers", "resellers", "tickets"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{t}</button>
         ))}
       </div>
@@ -674,6 +706,46 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
               )}
             </form>
           </div>
+        </div>
+      )}
+
+      {tab === "tickets" && (
+        <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", padding: 20 }}>
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 6 }}>Support Tickets</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Manage user support requests.</p>
+
+          {loadingTickets ? (
+            <p style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", padding: 40 }}>Loading tickets...</p>
+          ) : tickets.length === 0 ? (
+            <p style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", padding: 40 }}>No support tickets found.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {tickets.map((t: any) => (
+                <div key={t.id} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 16, background: "var(--bg)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <div>
+                      <h4 style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{t.subject}</h4>
+                      <p style={{ fontSize: 12, color: "var(--text-muted)" }}>By: {t.profiles?.full_name || t.profiles?.email || "Unknown"}</p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 8px", borderRadius: 6, background: t.status === "open" ? "rgba(245,158,11,.1)" : "rgba(0,212,170,.1)", color: t.status === "open" ? "#f59e0b" : "var(--primary)", textTransform: "uppercase" }}>{t.status}</span>
+                      <select 
+                        value={t.status} 
+                        onChange={(e) => handleUpdateTicketStatus(t.id, e.target.value)}
+                        style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 6, color: "var(--text)", fontSize: 12, padding: "4px 8px" }}
+                      >
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                        <option value="resolved">Resolved</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.4 }}>{t.message}</p>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)", display: "block", marginTop: 8 }}>{new Date(t.created_at).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
