@@ -167,7 +167,12 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
               <img 
                 src="/images/vaultpay_logo.png" 
                 alt="VaultPay Logo" 
-                style={{ width: 48, height: 48, objectFit: "contain" }}
+                style={{ 
+                  width: 48, height: 48, objectFit: "contain", 
+                  borderRadius: "50%", background: "#fff", padding: 2,
+                  clipPath: "circle(50% at 50% 50%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                }}
               />
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: 18, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.05em" }}>{logoText.topText}</span>
