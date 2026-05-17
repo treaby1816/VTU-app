@@ -40,6 +40,8 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
