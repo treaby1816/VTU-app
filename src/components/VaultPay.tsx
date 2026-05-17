@@ -24,6 +24,7 @@ import FundModal from "./transactions/FundModal";
 import TxTable from "./transactions/TxTable";
 import SettingsPage from "./dashboard/SettingsPage";
 import SupportPage from "./dashboard/SupportPage";
+import SchedulesPage from "./dashboard/SchedulesPage";
 import AIChatbot from "./ui/AIChatbot";
 import CursorWanderCard from "./ui/cursor-wander-card";
 import WhatsAppWidget from "./ui/WhatsAppWidget";
@@ -333,7 +334,30 @@ export default function VaultPay() {
   const [modal, setModal] = useState<string | null>(null);
   const [toasts, setToasts] = useState<any[]>([]);
   const [showBalance, setShowBalance] = useState(true);
+  const [prediction, setPrediction] = useState<string | null>(null);
+  const [loadingPrediction, setLoadingPrediction] = useState(false);
   const toastId = useRef(0);
+
+  useEffect(() => {
+    if (activePage === "dashboard" && user?.id && !prediction) {
+      const fetchPrediction = async () => {
+        setLoadingPrediction(true);
+        try {
+          const res = await fetch("/api/ai/predict-balance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: user.id, balance }),
+          });
+          const data = await res.json();
+          setPrediction(data.prediction);
+        } catch (err) {
+          console.error("Failed to fetch prediction:", err);
+        }
+        setLoadingPrediction(false);
+      };
+      fetchPrediction();
+    }
+  }, [activePage, user?.id, balance, prediction]);
 
   // Ref to prevent duplicate welcome screen triggers across re-renders
   const welcomeHandledRef = useRef(false);
@@ -483,6 +507,7 @@ export default function VaultPay() {
               { id: "transactions", label: "Transactions", icon: <History size={18} /> },
               { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
               { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
+              { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
               { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
               { id: "settings", label: "Settings", icon: <Settings size={18} /> },
               { id: "support", label: "Support", icon: <Info size={18} /> },
@@ -522,6 +547,7 @@ export default function VaultPay() {
                 { id: "transactions", label: "Transactions", icon: <History size={18} /> },
                 { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
                 { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
+                { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
                 { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
                 { id: "settings", label: "Settings", icon: <Settings size={18} /> },
                 { id: "support", label: "Support", icon: <Info size={18} /> },
@@ -598,6 +624,21 @@ export default function VaultPay() {
                 <Plus size={18} color="var(--primary)" /> Add Money to Wallet
               </button>
 
+              {/* AI Predictor Card */}
+              <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 20, border: "1px solid var(--border)", marginBottom: 32 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Zap size={18} color="var(--primary)" />
+                  </div>
+                  <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16 }}>AI Spend Predictor</h3>
+                </div>
+                {loadingPrediction ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Analyzing your spending patterns...</p>
+                ) : (
+                  <p style={{ color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>{prediction}</p>
+                )}
+              </div>
+
               {/* Supported Networks */}
               <div style={{ marginBottom: 32, width: "100%" }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
@@ -650,6 +691,7 @@ export default function VaultPay() {
           {activePage === "settings" && <SettingsPage user={user} isMobile={isMobile} />}
           {activePage === "support" && <SupportPage user={user} isMobile={isMobile} />}
           {activePage === "reseller" && <ResellerPage user={user} />}
+          {activePage === "schedules" && <SchedulesPage user={user} />}
           {activePage === "admin" && user.isAdmin && <AdminPanel isMobile={isMobile} />}
         </div>
       </div>

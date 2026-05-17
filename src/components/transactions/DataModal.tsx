@@ -15,6 +15,8 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
   const [txResult, setTxResult] = useState<any>(null);
   const [pin, setPin] = useState("");
   const [userPin, setUserPin] = useState<string | null>(null);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [frequency, setFrequency] = useState("daily");
 
   useEffect(() => {
     const fetchPin = async () => {
@@ -58,6 +60,27 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Transaction failed");
 
+      if (isScheduled && session?.user.id) {
+        const nextRun = new Date();
+        if (frequency === "daily") nextRun.setDate(nextRun.getDate() + 1);
+        if (frequency === "weekly") nextRun.setDate(nextRun.getDate() + 7);
+        if (frequency === "monthly") nextRun.setMonth(nextRun.getMonth() + 1);
+
+        await supabase
+          .from("schedules")
+          .insert({
+            user_id: session.user.id,
+            service_type: "data",
+            network,
+            phone,
+            amount: selectedPlan.price,
+            plan_id: selectedPlan.id,
+            frequency,
+            next_run: nextRun.toISOString(),
+            status: "active"
+          });
+      }
+
       setTxResult(data.transaction);
       setStep(4);
       onSubmit(data.transaction);
@@ -91,6 +114,22 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
           <div style={{ background: "rgba(0,212,170,.06)", borderRadius: 10, padding: "11px 14px", border: "1px solid rgba(0,212,170,.1)" }}>
             <p style={{ color: "#64748b", fontSize: 12 }}>Balance: <span style={{ color: "#00D4AA", fontWeight: 700 }}>{fmtN(balance)}</span></p>
           </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="checkbox" checked={isScheduled} onChange={(e) => setIsScheduled(e.target.checked)} style={{ cursor: "pointer" }} />
+            <label style={{ fontSize: 13, color: "var(--text)" }}>Schedule this recharge</label>
+          </div>
+          {isScheduled && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <label style={{ fontSize: 13, color: "var(--text-muted)" }}>Frequency:</label>
+              <select value={frequency} onChange={(e) => setFrequency(e.target.value)} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 6, color: "var(--text)", fontSize: 12, padding: "4px 8px" }}>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+          )}
+
           <button onClick={() => { if (phone.length >= 11 && selectedPlan) setStep(2); }} style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg,#00D4AA,#00b896)", color: "#000", fontWeight: 700, fontSize: 15 }}>Continue →</button>
         </div>
       )}
