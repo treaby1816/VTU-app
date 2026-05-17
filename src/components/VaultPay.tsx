@@ -629,6 +629,23 @@ export default function VaultPay() {
                 <Plus size={18} color="var(--primary)" /> Add Money to Wallet
               </button>
 
+              {/* Supported Networks */}
+              <div style={{ marginBottom: 32, width: "100%" }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+                  {[
+                    { name: "MTN", logo: "/images/mtn.png" },
+                    { name: "Airtel", logo: "/images/airtel.png" },
+                    { name: "Glo", logo: "/images/glo.png" },
+                    { name: "9mobile", logo: "/images/9mobile.png" }
+                  ].map((n, idx) => (
+                    <div key={idx} style={{ aspectRatio: "1/1", width: "100%", borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, transition: "transform .3s", cursor: "pointer" }} onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}>
+                      <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 16 }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* AI Predictor Card */}
               <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 20, border: "1px solid var(--border)", marginBottom: 32 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -647,23 +664,6 @@ export default function VaultPay() {
               {/* Spend Chart */}
               <div style={{ marginBottom: 32 }}>
                 <SpendChart transactions={transactions} />
-              </div>
-
-              {/* Supported Networks */}
-              <div style={{ marginBottom: 32, width: "100%" }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-                  {[
-                    { name: "MTN", logo: "/images/mtn.png" },
-                    { name: "Airtel", logo: "/images/airtel.png" },
-                    { name: "Glo", logo: "/images/glo.png" },
-                    { name: "9mobile", logo: "/images/9mobile.png" }
-                  ].map((n, idx) => (
-                    <div key={idx} style={{ aspectRatio: "1/1", width: "100%", borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, transition: "transform .3s", cursor: "pointer" }} onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}>
-                      <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 16 }} />
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div>
