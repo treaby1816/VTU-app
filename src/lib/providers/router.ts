@@ -12,20 +12,23 @@ import { smeplugAirtime, smeplugData } from "./smeplug";
 import { datastationAirtime, datastationData } from "./datastation";
 import { vtungAirtime, vtungData } from "./vtung";
 import { logApiRequest } from "./telemetry";
+import { fafotechAirtime, fafotechData } from "./fafotech";
 
 // ── Dispatch table — maps provider name to its adapter function
 const AIRTIME_ADAPTERS: Record<string, Function> = {
-  smeplug:     smeplugAirtime,
-  datastation: datastationAirtime,
-  n3tdata:     datastationAirtime, // same API shape as datastation
-  vtung:       vtungAirtime,
+  fafotech:    fafotechAirtime,    // Priority 1 — cheapest
+  smeplug:     smeplugAirtime,     // Priority 2
+  datastation: datastationAirtime, // Priority 3
+  n3tdata:     datastationAirtime, // Priority 4
+  vtung:       vtungAirtime,       // Priority 5 — last resort
 };
 
 const DATA_ADAPTERS: Record<string, Function> = {
-  smeplug:     smeplugData,
-  datastation: datastationData,
-  n3tdata:     datastationData,   // same API shape as datastation
-  vtung:       vtungData,
+  fafotech:    fafotechData,       // Priority 1 — cheapest
+  smeplug:     smeplugData,        // Priority 2
+  datastation: datastationData,    // Priority 3
+  n3tdata:     datastationData,    // Priority 4
+  vtung:       vtungData,          // Priority 5 — last resort
 };
 
 // ── Main hop function for AIRTIME

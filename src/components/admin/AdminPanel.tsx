@@ -16,6 +16,33 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
   const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0, totalInflow: 0, totalOutflow: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Fafotech live plans state
+  const [fafoPlans, setFafoPlans] = useState<any[]>([]);
+  const [loadingFafoPlans, setLoadingFafoPlans] = useState(false);
+  const [showFafoPlans, setShowFafoPlans] = useState(false);
+  const [selectedFafoNetwork, setSelectedFafoNetwork] = useState("mtn");
+  const [fafoError, setFafoError] = useState("");
+
+  const fetchFafoPlans = async (net: string) => {
+    setLoadingFafoPlans(true);
+    setFafoError("");
+    try {
+      const res = await fetch(`/api/admin/fafotech-plans?network=${net}`);
+      const data = await res.json();
+      if (data.error) {
+        setFafoError(data.error);
+        setFafoPlans([]);
+      } else {
+        setFafoPlans(data.plans || []);
+      }
+    } catch (err: any) {
+      setFafoError("Failed to connect to endpoint");
+      setFafoPlans([]);
+    } finally {
+      setLoadingFafoPlans(false);
+    }
+  };
+
   useEffect(() => {
     async function fetchAdminData() {
       setLoading(true);
@@ -275,16 +302,23 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                {providerStats.sort((a, b) => a.priority - b.priority).map((p) => {
                   const rateColor = p.last24h.successRate >= 80 ? "#10b981" : (p.last24h.successRate >= 50 ? "#f59e0b" : "#f43f5e");
+                  const isFafotech = p.name === "fafotech";
                   
                   return (
-                    <div key={p.name} style={{ background: "#0D1426", border: "1px solid rgba(255,255,255,.05)", borderRadius: 12, padding: 20 }}>
+                    <div key={p.name} style={{ background: "#0D1426", border: isFafotech ? "1px solid rgba(245,158,11,0.3)" : "1px solid rgba(255,255,255,.05)", borderRadius: 12, padding: 20 }}>
                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                           <div>
                             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                                <h4 style={{ fontFamily: "Syne, sans-serif", fontSize: 16, margin: 0 }}>{p.label}</h4>
-                               <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(255,255,255,0.1)", color: "var(--text-muted)" }}>
-                                 Priority {p.priority} {p.priority === 1 && "(Primary)"}
-                               </span>
+                               {isFafotech ? (
+                                  <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>
+                                    ⭐ Primary
+                                  </span>
+                               ) : (
+                                  <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(255,255,255,0.1)", color: "var(--text-muted)" }}>
+                                    Priority {p.priority}
+                                  </span>
+                               )}
                                {p.supportsSME ? (
                                   <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(16,185,129,0.1)", color: "#10b981" }}>SME ✓</span>
                                ) : (
@@ -321,11 +355,83 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
                           </div>
 
                           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                             <button onClick={() => alert("POST /api/admin/providers logic to be implemented for priority reordering.")} style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                                Set as Primary
-                             </button>
+                             {isFafotech ? (
+                               <button 
+                                 onClick={() => {
+                                   setShowFafoPlans(!showFafoPlans);
+                                   if (!showFafoPlans && fafoPlans.length === 0) {
+                                     fetchFafoPlans(selectedFafoNetwork);
+                                   }
+                                 }} 
+                                 style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", color: "#F59E0B", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                               >
+                                 {showFafoPlans ? "Hide Live Plans" : "Fetch Live Plans"}
+                               </button>
+                             ) : (
+                               <button onClick={() => alert("POST /api/admin/providers logic to be implemented for priority reordering.")} style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                                  Set as Primary
+                               </button>
+                             )}
                           </div>
                        </div>
+
+                       {isFafotech && showFafoPlans && (
+                         <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                             <h5 style={{ fontFamily: "Syne, sans-serif", fontSize: 14, margin: 0, color: "#F59E0B" }}>Fafotech Live Data Plans</h5>
+                             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                               <select 
+                                 value={selectedFafoNetwork} 
+                                 onChange={(e) => {
+                                   setSelectedFafoNetwork(e.target.value);
+                                   fetchFafoPlans(e.target.value);
+                                 }}
+                                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 6, color: "var(--text)", fontSize: 12, padding: "4px 8px" }}
+                               >
+                                 <option value="mtn">MTN</option>
+                                 <option value="airtel">Airtel</option>
+                                 <option value="glo">Glo</option>
+                                 <option value="9mobile">9mobile</option>
+                               </select>
+                               <button 
+                                 onClick={() => fetchFafoPlans(selectedFafoNetwork)}
+                                 style={{ padding: "4px 8px", borderRadius: 6, background: "rgba(255,255,255,0.05)", border: "none", color: "var(--text)", fontSize: 12, cursor: "pointer" }}
+                               >
+                                 Reload
+                               </button>
+                             </div>
+                           </div>
+
+                           {loadingFafoPlans ? (
+                             <p style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>Fetching live plans...</p>
+                           ) : fafoError ? (
+                             <p style={{ fontSize: 12, color: "#f43f5e", textAlign: "center" }}>{fafoError}</p>
+                           ) : fafoPlans.length === 0 ? (
+                             <p style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>No plans returned. Check if API key is set.</p>
+                           ) : (
+                             <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 250, overflowY: "auto", paddingRight: 4 }}>
+                               {fafoPlans.map((plan: any, idx: number) => {
+                                 const name = plan?.plan_name || plan?.name || plan?.plan_size || "Plan";
+                                 const price = plan?.plan_amount || plan?.price || plan?.amount || 0;
+                                 const validity = plan?.plan_validity || plan?.validity || "30 Days";
+                                 const id = plan?.plan_id || plan?.id || plan?.plan_number || plan?.planId || "N/A";
+                                 return (
+                                   <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }}>
+                                     <div>
+                                       <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{name}</span>
+                                       <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 8 }}>({validity})</span>
+                                     </div>
+                                     <div style={{ textAlign: "right" }}>
+                                       <span style={{ fontSize: 12, color: "var(--primary)", fontWeight: 700, marginRight: 12 }}>₦{price}</span>
+                                       <span style={{ fontSize: 11, background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: 4, fontFamily: "monospace", color: "#94a3b8" }}>ID: {id}</span>
+                                     </div>
+                                   </div>
+                                 );
+                               })}
+                             </div>
+                           )}
+                         </div>
+                       )}
                     </div>
                   );
                })}

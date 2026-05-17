@@ -1,4 +1,9 @@
-export type ProviderName = "smeplug" | "datastation" | "n3tdata" | "vtung";
+export type ProviderName = 
+  | "fafotech"      // Priority 1 — cheapest
+  | "smeplug"       // Priority 2
+  | "datastation"   // Priority 3
+  | "n3tdata"       // Priority 4
+  | "vtung";        // Priority 5 — last resort
 export type ProviderStatus = "active" | "degraded" | "offline";
 
 export interface ProviderConfig {
@@ -6,7 +11,8 @@ export interface ProviderConfig {
   label: string;
   baseUrl: string;
   apiKey: string;
-  priority: number;         // 1 = try first, 4 = last resort
+  username?: string;
+  priority: number;         // 1 = try first, 5 = last resort
   markup: number;           // percentage profit margin
   supportsAirtime: boolean;
   supportsData: boolean;

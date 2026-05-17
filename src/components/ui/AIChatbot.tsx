@@ -72,25 +72,31 @@ export default function AIChatbot() {
     setInput("");
     setIsTyping(true);
 
-    // Simulate "thinking / researching" delay
-    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
+    const botMsgId = (Date.now() + 1).toString();
+    
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
 
-    // Simple NLP / Keyword matching
-    const query = userMsg.text.toLowerCase();
-    let bestMatch = fallbackResponse;
-
-    for (const item of knowledgeBase) {
-      // If any keyword is found in the user's message
-      const matchFound = item.keywords.some((kw) => query.includes(kw));
-      if (matchFound) {
-        bestMatch = item.response;
-        break;
-      }
+      if (!res.ok) throw new Error("Failed to get response");
+      
+      const data = await res.json();
+      const botMsg: Message = { id: botMsgId, text: data.text, sender: "bot" };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (error) {
+      console.error("Chat Error:", error);
+      const errorMsg: Message = { 
+        id: botMsgId, 
+        text: "I'm having trouble connecting to my brain right now. Please try again or visit our Support page.", 
+        sender: "bot" 
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsTyping(false);
     }
-
-    const botMsg: Message = { id: (Date.now() + 1).toString(), text: bestMatch, sender: "bot" };
-    setIsTyping(false);
-    setMessages((prev) => [...prev, botMsg]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

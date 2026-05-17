@@ -165,3 +165,39 @@ CREATE TABLE IF NOT EXISTS public.api_logs (
 -- Indexes for querying API telemetry
 CREATE INDEX IF NOT EXISTS idx_api_logs_provider ON public.api_logs(provider);
 CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON public.api_logs(created_at);
+
+-- ── 10. Fafotech Multi-Provider Updates & Margin Analytics ─────────────────
+
+-- Update provider column constraint to include fafotech
+ALTER TABLE public.transactions
+  DROP CONSTRAINT IF EXISTS transactions_provider_check;
+
+ALTER TABLE public.transactions
+  ADD CONSTRAINT transactions_provider_check
+  CHECK (provider IN ('fafotech','smeplug','datastation','n3tdata','vtung'));
+
+-- Track provider cost for margin analysis
+ALTER TABLE public.transactions
+  ADD COLUMN IF NOT EXISTS provider_cost NUMERIC(12,2);
+
+ALTER TABLE public.transactions
+  ADD COLUMN IF NOT EXISTS margin NUMERIC(12,2) 
+  GENERATED ALWAYS AS (amount - COALESCE(provider_cost, 0)) STORED;
+
+-- View: profit by provider (useful for admin analytics)
+CREATE OR REPLACE VIEW public.provider_margins AS
+SELECT
+  provider,
+  COUNT(*)                          AS total_transactions,
+  SUM(amount)                       AS total_revenue,
+  SUM(provider_cost)                AS total_cost,
+  SUM(margin)                       AS total_margin,
+  ROUND(AVG(margin), 2)             AS avg_margin_per_tx,
+  COUNT(*) FILTER (WHERE status = 'success') AS successful,
+  ROUND(
+    COUNT(*) FILTER (WHERE status = 'success') * 100.0 / NULLIF(COUNT(*), 0), 1
+  )                                 AS success_rate_pct
+FROM public.transactions
+WHERE type = 'debit'
+GROUP BY provider
+ORDER BY total_margin DESC;
