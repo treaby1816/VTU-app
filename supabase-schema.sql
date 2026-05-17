@@ -108,6 +108,9 @@ DECLARE
   current_balance NUMERIC;
 BEGIN
   IF NEW.type = 'debit' THEN
+    -- Pessimistic row-locking to serialize debit transactions for the user
+    PERFORM 1 FROM public.profiles WHERE id = NEW.user_id FOR UPDATE;
+    
     SELECT public.get_wallet_balance(NEW.user_id) INTO current_balance;
     IF current_balance < NEW.amount THEN
       RAISE EXCEPTION 'Insufficient wallet balance. Balance: %, Requested: %', current_balance, NEW.amount;
@@ -283,3 +286,132 @@ CREATE POLICY "Resellers can view tenant transactions"
 GRANT SELECT ON public.tenants TO authenticated, anon;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.tenant_pricing TO authenticated;
 
+-- ── 12. Notifications Table ───────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title      TEXT NOT NULL,
+  message    TEXT NOT NULL,
+  read       BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for notification queries
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread ON public.notifications(user_id, read) WHERE read = FALSE;
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON public.notifications(created_at DESC);
+
+-- RLS for Notifications
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own notifications"
+  ON public.notifications FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own notifications"
+  ON public.notifications FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own notifications"
+  ON public.notifications FOR DELETE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Service role can insert notifications"
+  ON public.notifications FOR INSERT
+  WITH CHECK (TRUE);
+
+GRANT SELECT, UPDATE, DELETE ON public.notifications TO authenticated;
+
+-- ── 13. Referral Rewards Table ────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.referral_rewards (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id          UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  referred_user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  amount           NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+  service_type     TEXT NOT NULL CHECK (service_type IN ('airtime', 'data')),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_referral_rewards_user_id ON public.referral_rewards(user_id);
+CREATE INDEX IF NOT EXISTS idx_referral_rewards_referred ON public.referral_rewards(referred_user_id);
+
+ALTER TABLE public.referral_rewards ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own referral rewards"
+  ON public.referral_rewards FOR SELECT
+  USING (auth.uid() = user_id);
+
+GRANT SELECT ON public.referral_rewards TO authenticated;
+
+-- ── 14. Security Columns for Profiles ─────────────────────────────────────
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS transaction_pin TEXT,
+  ADD COLUMN IF NOT EXISTS security_questions JSONB DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS pin_reset_attempts INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS pin_reset_locked_until TIMESTAMPTZ;
+
+-- ── 15. Secure Transaction PIN Reset RPC (with brute-force protection) ────
+CREATE OR REPLACE FUNCTION public.verify_security_question_and_reset_pin(
+  p_user_id UUID,
+  p_answer TEXT,
+  p_new_pin TEXT
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_questions JSONB;
+  v_correct_answer TEXT;
+  v_attempts INT;
+  v_locked_until TIMESTAMPTZ;
+BEGIN
+  -- Row-lock profile for safety
+  SELECT security_questions, pin_reset_attempts, pin_reset_locked_until
+    FROM public.profiles
+    WHERE id = p_user_id
+    INTO v_questions, v_attempts, v_locked_until
+    FOR UPDATE;
+
+  -- Check brute-force lockout (5 failed attempts = 30 minute lock)
+  IF v_locked_until IS NOT NULL AND v_locked_until > NOW() THEN
+    RAISE EXCEPTION 'Too many failed attempts. Please try again after %.',
+      TO_CHAR(v_locked_until, 'HH24:MI');
+  END IF;
+
+  IF v_questions IS NULL OR jsonb_array_length(v_questions) = 0 THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Extract answer from first question
+  v_correct_answer := v_questions->0->>'answer';
+
+  IF LOWER(TRIM(p_answer)) = LOWER(TRIM(v_correct_answer)) THEN
+    -- Correct answer: reset PIN and clear attempt counters
+    UPDATE public.profiles
+    SET transaction_pin = p_new_pin,
+        pin_reset_attempts = 0,
+        pin_reset_locked_until = NULL
+    WHERE id = p_user_id;
+
+    RETURN TRUE;
+  ELSE
+    -- Wrong answer: increment attempts
+    v_attempts := COALESCE(v_attempts, 0) + 1;
+
+    IF v_attempts >= 5 THEN
+      -- Lock for 30 minutes
+      UPDATE public.profiles
+      SET pin_reset_attempts = v_attempts,
+          pin_reset_locked_until = NOW() + INTERVAL '30 minutes'
+      WHERE id = p_user_id;
+    ELSE
+      UPDATE public.profiles
+      SET pin_reset_attempts = v_attempts
+      WHERE id = p_user_id;
+    END IF;
+
+    RETURN FALSE;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.verify_security_question_and_reset_pin TO authenticated;

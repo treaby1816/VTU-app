@@ -1,11 +1,12 @@
 // Smart provider router — tries providers in priority order
-// Hops to the next if one fails or is cooling down
+// Hops to the next if one fails or is cooling down.
+// Cooldowns are batch-fetched ONCE before the loop to minimize DB calls.
 
 import {
   getAirtimeProviders,
   getDataProviders,
   markProviderFailed,
-  isProviderCoolingDown,
+  fetchActiveCooldowns,
 } from "./config";
 import { PurchaseParams, PurchaseResult } from "./types";
 import { smeplugAirtime, smeplugData } from "./smeplug";
@@ -38,9 +39,12 @@ export async function routeAirtime(
   const providers = getAirtimeProviders();
   const attempted: string[] = [];
 
+  // Batch-fetch all cooldowns ONCE before the loop
+  const cooldowns = await fetchActiveCooldowns();
+
   for (const provider of providers) {
-    // Skip if in cooldown from a recent failure
-    if (isProviderCoolingDown(provider.name)) {
+    // Skip if in cooldown (no DB call — uses pre-fetched set)
+    if (cooldowns.has(provider.name)) {
       console.log(`[Router] Skipping ${provider.name} — cooling down`);
       continue;
     }
@@ -59,7 +63,7 @@ export async function routeAirtime(
       `[Router] ${provider.label} → ${result.success ? "✅ SUCCESS" : "❌ FAILED"} (${elapsed}ms)`
     );
 
-    // Asynchronously log to Supabase
+    // Fire-and-forget telemetry log
     logApiRequest({
       provider: provider.name,
       serviceType: "airtime",
@@ -74,7 +78,7 @@ export async function routeAirtime(
     }
 
     // Mark as failed and try next provider
-    markProviderFailed(provider.name);
+    await markProviderFailed(provider.name);
     console.log(`[Router] Hopping to next provider...`);
   }
 
@@ -94,8 +98,12 @@ export async function routeData(
   const providers = getDataProviders();
   const attempted: string[] = [];
 
+  // Batch-fetch all cooldowns ONCE before the loop
+  const cooldowns = await fetchActiveCooldowns();
+
   for (const provider of providers) {
-    if (isProviderCoolingDown(provider.name)) {
+    // Skip if in cooldown (no DB call — uses pre-fetched set)
+    if (cooldowns.has(provider.name)) {
       console.log(`[Router] Skipping ${provider.name} — cooling down`);
       continue;
     }
@@ -114,7 +122,7 @@ export async function routeData(
       `[Router] ${provider.label} → ${result.success ? "✅ SUCCESS" : "❌ FAILED"} (${elapsed}ms)`
     );
 
-    // Asynchronously log to Supabase
+    // Fire-and-forget telemetry log
     logApiRequest({
       provider: provider.name,
       serviceType: "data",
@@ -128,7 +136,7 @@ export async function routeData(
       return { ...result, attemptedProviders: attempted };
     }
 
-    markProviderFailed(provider.name);
+    await markProviderFailed(provider.name);
     console.log(`[Router] Hopping to next provider...`);
   }
 

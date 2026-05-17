@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export interface TelemetryLog {
   provider: string;
@@ -12,12 +12,13 @@ export interface TelemetryLog {
 
 /**
  * Logs an API request to the global telemetry table in Supabase.
- * This runs asynchronously to prevent blocking the user's transaction.
+ * Uses the service-role admin client to bypass RLS on the api_logs table.
+ * This runs fire-and-forget to prevent blocking the user's transaction.
  */
-export const logApiRequest = async (log: TelemetryLog) => {
+export const logApiRequest = (log: TelemetryLog): void => {
   try {
-    // Fire and forget (don't await unless you want to block)
-    supabase.from("api_logs").insert([{
+    // Fire and forget — no await, no blocking
+    supabaseAdmin.from("api_logs").insert([{
       provider: log.provider,
       service_type: log.serviceType,
       request_payload: log.requestPayload,

@@ -7,13 +7,14 @@ import {
   ChevronRight, CheckCircle2, XCircle, Clock, RefreshCw, Download,
   Eye, EyeOff, Phone, X, ArrowUpRight, ArrowDownLeft, Copy,
   Search, ChevronDown, Home, CreditCard, Activity, Lock, Wifi,
-  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft, Award, Trophy
+  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft, Award, Trophy, Tv, Book
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { useStore } from "@/store/useStore";
 import { useUserData } from "@/hooks/useUserData";
 import { fmtN, BRAND, sleep } from "@/lib/utils";
+import type { VaultUser } from "@/lib/types";
 
 // Extracted Components
 import AuthScreen from "./auth/AuthScreen";
@@ -27,13 +28,14 @@ import SupportPage from "./dashboard/SupportPage";
 import SchedulesPage from "./dashboard/SchedulesPage";
 import ReferralsPage from "./dashboard/ReferralsPage";
 import LeaderboardPage from "./dashboard/LeaderboardPage";
+import SpendChart from "./dashboard/SpendChart";
+import NotificationDropdown from "./dashboard/NotificationDropdown";
 import AIChatbot from "./ui/AIChatbot";
 import CursorWanderCard from "./ui/cursor-wander-card";
 import WhatsAppWidget from "./ui/WhatsAppWidget";
 
 // Whitelabel Reseller Onboarding Component
-// Whitelabel Reseller Onboarding Component
-const ResellerPage = memo(({ user }: { user: any }) => {
+const ResellerPage = memo(({ user }: { user: VaultUser }) => {
   const [copied, setCopied] = useState(false);
   const [isReseller, setIsReseller] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
@@ -339,11 +341,13 @@ export default function VaultPay() {
   const [prediction, setPrediction] = useState<string | null>(null);
   const [loadingPrediction, setLoadingPrediction] = useState(false);
   const toastId = useRef(0);
+  const lastFetchedBalance = useRef<number | null>(null);
 
   useEffect(() => {
-    if (activePage === "dashboard" && user?.id && !prediction) {
+    if (activePage === "dashboard" && user?.id && balance !== lastFetchedBalance.current) {
       const fetchPrediction = async () => {
         setLoadingPrediction(true);
+        lastFetchedBalance.current = balance;
         try {
           const res = await fetch("/api/ai/predict-balance", {
             method: "POST",
@@ -359,14 +363,14 @@ export default function VaultPay() {
       };
       fetchPrediction();
     }
-  }, [activePage, user?.id, balance, prediction]);
+  }, [activePage, user?.id, balance]);
 
   // Ref to prevent duplicate welcome screen triggers across re-renders
   const welcomeHandledRef = useRef(false);
   // Ref to track if initial session has been loaded (skip welcome for it)
   const initialSessionLoaded = useRef(false);
 
-  const addToast = useCallback((type: string, title: string, msg?: string) => {
+  const addToast = useCallback((type: "success" | "error" | "info", title: string, msg?: string) => {
     const id = ++toastId.current;
     setToasts(p => [...p, { id, type, title, msg }]);
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000);
@@ -381,7 +385,8 @@ export default function VaultPay() {
         .eq("id", sessionUser.id)
         .limit(1);
 
-      const isMasterAdmin = sessionUser.email === "felixadewole16@gmail.com";
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "felixadewole16@gmail.com";
+      const isMasterAdmin = sessionUser.email === adminEmail;
       const hasPin = data && data.length > 0 && data[0].transaction_pin ? true : false;
       return {
         id: sessionUser.id,
@@ -461,6 +466,22 @@ export default function VaultPay() {
     setModal(null);
   };
 
+  // Shared navigation items — used by both desktop sidebar and mobile drawer
+  const navItems = useMemo(() => [
+    { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
+    { id: "transactions", label: "Transactions", icon: <History size={18} /> },
+    { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
+    { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
+    { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
+    { id: "referrals", label: "Refer & Earn", icon: <Users size={18} /> },
+    { id: "leaderboard", label: "Leaderboard", icon: <Trophy size={18} /> },
+    { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
+    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
+    { id: "support", label: "Support", icon: <Info size={18} /> },
+    { id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> },
+    ...(user?.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : []),
+  ], [user?.isAdmin]);
+
   const handleNav = (page: string) => {
     if (["airtime", "data", "fund"].includes(page)) { setModal(page); return; }
     setActivePage(page);
@@ -504,20 +525,7 @@ export default function VaultPay() {
             {!sidebarCollapsed && <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20 }}>{BRAND}</h2>}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
-              { id: "transactions", label: "Transactions", icon: <History size={18} /> },
-              { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
-              { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
-              { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
-              { id: "referrals", label: "Refer & Earn", icon: <Users size={18} /> },
-              { id: "leaderboard", label: "Leaderboard", icon: <Trophy size={18} /> },
-              { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
-              { id: "settings", label: "Settings", icon: <Settings size={18} /> },
-              { id: "support", label: "Support", icon: <Info size={18} /> },
-              { id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> },
-              ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
-            ].map(item => (
+            {navItems.map(item => (
               <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text-muted)", cursor: "pointer", fontWeight: 600, transition: "all .2s" }}>
                 {item.icon}
                 {!sidebarCollapsed && <span>{item.label}</span>}
@@ -546,20 +554,7 @@ export default function VaultPay() {
               <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", color: "var(--text)", display: "flex" }}><X size={24} /></button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
-                { id: "transactions", label: "Transactions", icon: <History size={18} /> },
-                { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
-                { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
-                { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
-                { id: "referrals", label: "Refer & Earn", icon: <Users size={18} /> },
-                { id: "leaderboard", label: "Leaderboard", icon: <Trophy size={18} /> },
-                { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
-                { id: "settings", label: "Settings", icon: <Settings size={18} /> },
-                { id: "support", label: "Support", icon: <Info size={18} /> },
-                { id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> },
-                ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
-              ].map(item => (
+              {navItems.map(item => (
                 <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text)", cursor: "pointer", fontWeight: 600 }}>
                   {item.icon}
                   <span>{item.label}</span>
@@ -584,6 +579,7 @@ export default function VaultPay() {
             <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>{activePage === "dashboard" ? "Dashboard" : activePage.charAt(0).toUpperCase() + activePage.slice(1)}</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <NotificationDropdown user={user} />
             <button onClick={toggleTheme} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text)" }}>
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -645,6 +641,11 @@ export default function VaultPay() {
                 )}
               </div>
 
+              {/* Spend Chart */}
+              <div style={{ marginBottom: 32 }}>
+                <SpendChart transactions={transactions} />
+              </div>
+
               {/* Supported Networks */}
               <div style={{ marginBottom: 32, width: "100%" }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
@@ -662,17 +663,36 @@ export default function VaultPay() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: 32 }}>
-                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Quick Actions</h3>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>Quick Actions</h3>
+                  <button onClick={() => setActivePage("transactions")} style={{ background: "none", border: "none", color: "#00D4AA", fontWeight: 600, fontSize: 13 }}>View All</button>
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
                   {[
                     { id: "airtime", label: "Airtime", icon: <Phone />, color: "#F59E0B" },
                     { id: "data", label: "Data", icon: <Wifi />, color: "#3B82F6" },
-                    { id: "fund", label: "Fund", icon: <Plus />, color: "#00D4AA" }
+                    { id: "fund", label: "Fund", icon: <Plus />, color: "#00D4AA" },
+                    { id: "cable", label: "Cable TV", icon: <Tv size={24} />, color: "#EF4444", soon: true },
+                    { id: "electricity", label: "Electricity", icon: <Zap size={24} />, color: "#F59E0B", soon: true },
+                    { id: "exam", label: "Exam Pins", icon: <Book size={24} />, color: "#10B981", soon: true }
                   ].map(action => (
-                    <button key={action.id} onClick={() => setModal(action.id)} style={{ background: "#0D1426", border: "1px solid rgba(255,255,255,.05)", borderRadius: 16, padding: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, cursor: "pointer", transition: "transform .2s" }}>
+                    <button 
+                      key={action.id} 
+                      onClick={() => {
+                        if (action.soon) {
+                          addToast("info", "Coming Soon", `${action.label} feature will be available soon!`);
+                        } else {
+                          setModal(action.id);
+                        }
+                      }} 
+                      style={{ background: "#0D1426", border: "1px solid rgba(255,255,255,.05)", borderRadius: 16, padding: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, cursor: "pointer", transition: "transform .2s", position: "relative" }}
+                    >
                       <div style={{ color: action.color }}>{action.icon}</div>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8" }}>{action.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{action.label}</span>
+                      {action.soon && (
+                        <span style={{ position: "absolute", top: 8, right: 8, background: "var(--primary)", color: "#000", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 6, textTransform: "uppercase" }}>Soon</span>
+                      )}
                     </button>
                   ))}
                 </div>

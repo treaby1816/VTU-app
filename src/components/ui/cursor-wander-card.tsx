@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useState, useRef, useEffect } from "react"
-import { Sparkles, Wifi } from "lucide-react"
+import { Zap, Wifi } from "lucide-react"
 
 interface CosmicNebulaMastercardProps {
   cardholderName?: string
@@ -170,7 +170,7 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: "0 8px 20px rgba(0,212,170,0.3)",
               }}>
-                <Sparkles size={24} color="#000" fill="#000" />
+                <Zap size={24} color="#000" fill="#000" />
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: 18, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.05em" }}>{logoText.topText}</span>

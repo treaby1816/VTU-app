@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useStore } from "@/store/useStore";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
 export function useUserData() {
   const user = useStore((state) => state.user);
@@ -47,6 +47,12 @@ export function useUserData() {
     }
   }, [transactionsQuery.data, setTransactions]);
 
+  // Stable refetch references — prevents channel churn from unstable query object references.
+  // React Query returns new object references on every render for balanceQuery/transactionsQuery,
+  // so including them directly in deps would cause continuous unsubscribe/resubscribe loops.
+  const refetchBalance = useCallback(() => { balanceQuery.refetch(); }, [balanceQuery.refetch]);
+  const refetchTxns = useCallback(() => { transactionsQuery.refetch(); }, [transactionsQuery.refetch]);
+
   // Real-time listener for transaction updates
   useEffect(() => {
     if (!user?.id) return;
@@ -57,8 +63,8 @@ export function useUserData() {
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${user.id}` },
         () => {
-          balanceQuery.refetch();
-          transactionsQuery.refetch();
+          refetchBalance();
+          refetchTxns();
         }
       )
       .subscribe();
@@ -66,7 +72,7 @@ export function useUserData() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, balanceQuery, transactionsQuery]);
+  }, [user?.id, refetchBalance, refetchTxns]);
 
   return {
     balance: balanceQuery.data ?? 0,

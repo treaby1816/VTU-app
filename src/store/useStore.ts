@@ -1,23 +1,17 @@
 import { create } from 'zustand';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  isAdmin: boolean;
-}
+import type { VaultUser, Transaction, Toast } from '@/lib/types';
 
 interface VaultState {
-  user: User | null;
+  user: VaultUser | null;
   balance: number;
-  transactions: any[];
+  transactions: Transaction[];
   isLoading: boolean;
   
   theme: 'dark' | 'light';
   
-  setUser: (user: User | null) => void;
+  setUser: (user: VaultUser | null) => void;
   setBalance: (balance: number) => void;
-  setTransactions: (txs: any[]) => void;
+  setTransactions: (txs: Transaction[]) => void;
   setLoading: (loading: boolean) => void;
   toggleTheme: () => void;
   
