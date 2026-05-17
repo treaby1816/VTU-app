@@ -171,6 +171,42 @@ export async function POST(req: NextRequest) {
         .eq("id", resellerTxData.id);
     }
 
+    // Process Referral Reward
+    if (result.success) {
+      const { data: userData } = await supabase
+        .from("profiles")
+        .select("referred_by")
+        .eq("id", user_id)
+        .maybeSingle();
+
+      if (userData && userData.referred_by) {
+        const rewardAmount = amount * 0.01; // 1% for data
+        
+        // 1. Insert reward record
+        await supabase
+          .from("referral_rewards")
+          .insert({
+            user_id: userData.referred_by,
+            referred_user_id: user_id,
+            amount: rewardAmount,
+            service_type: "data"
+          });
+
+        // 2. Credit the referrer's wallet
+        await supabase
+          .from("transactions")
+          .insert({
+            user_id: userData.referred_by,
+            type: "credit",
+            service: `Referral Reward (Data)`,
+            amount: rewardAmount,
+            status: "success",
+            ref: "REF_RWD_" + ref,
+            tenant_id: tenant ? tenant.id : null,
+          });
+      }
+    }
+
     // 7. Process Combined Refunds on Failure (Batch Insert)
     if (!result.success) {
       const refundRecords = [];

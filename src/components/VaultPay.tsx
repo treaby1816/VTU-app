@@ -7,7 +7,7 @@ import {
   ChevronRight, CheckCircle2, XCircle, Clock, RefreshCw, Download,
   Eye, EyeOff, Phone, X, ArrowUpRight, ArrowDownLeft, Copy,
   Search, ChevronDown, Home, CreditCard, Activity, Lock, Wifi,
-  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft, Award
+  Plus, Minus, Check, Info, Globe, History, Menu, Sun, Moon, Settings, MessageCircle, ArrowLeft, Award, Trophy
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -25,6 +25,8 @@ import TxTable from "./transactions/TxTable";
 import SettingsPage from "./dashboard/SettingsPage";
 import SupportPage from "./dashboard/SupportPage";
 import SchedulesPage from "./dashboard/SchedulesPage";
+import ReferralsPage from "./dashboard/ReferralsPage";
+import LeaderboardPage from "./dashboard/LeaderboardPage";
 import AIChatbot from "./ui/AIChatbot";
 import CursorWanderCard from "./ui/cursor-wander-card";
 import WhatsAppWidget from "./ui/WhatsAppWidget";
@@ -508,6 +510,8 @@ export default function VaultPay() {
               { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
               { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
               { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
+              { id: "referrals", label: "Refer & Earn", icon: <Users size={18} /> },
+              { id: "leaderboard", label: "Leaderboard", icon: <Trophy size={18} /> },
               { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
               { id: "settings", label: "Settings", icon: <Settings size={18} /> },
               { id: "support", label: "Support", icon: <Info size={18} /> },
@@ -548,6 +552,8 @@ export default function VaultPay() {
                 { id: "airtime", label: "Buy Airtime", icon: <Phone size={18} /> },
                 { id: "data", label: "Buy Data", icon: <Wifi size={18} /> },
                 { id: "schedules", label: "Schedules", icon: <Clock size={18} /> },
+                { id: "referrals", label: "Refer & Earn", icon: <Users size={18} /> },
+                { id: "leaderboard", label: "Leaderboard", icon: <Trophy size={18} /> },
                 { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
                 { id: "settings", label: "Settings", icon: <Settings size={18} /> },
                 { id: "support", label: "Support", icon: <Info size={18} /> },
@@ -692,6 +698,8 @@ export default function VaultPay() {
           {activePage === "support" && <SupportPage user={user} isMobile={isMobile} />}
           {activePage === "reseller" && <ResellerPage user={user} />}
           {activePage === "schedules" && <SchedulesPage user={user} />}
+          {activePage === "referrals" && <ReferralsPage user={user} />}
+          {activePage === "leaderboard" && <LeaderboardPage user={user} />}
           {activePage === "admin" && user.isAdmin && <AdminPanel isMobile={isMobile} />}
         </div>
       </div>
