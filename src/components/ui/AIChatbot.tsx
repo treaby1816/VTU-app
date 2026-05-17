@@ -9,7 +9,7 @@ export default function AIChatbot() {
   const [showMessage, setShowMessage] = useState(false);
 
   // Support WhatsApp Number
-  const SUPPORT_NUMBER = "2349071066072";
+  const SUPPORT_NUMBER = "2348065136221";
   const defaultMessage = "Hello VaultPay Support, I need help with my account.";
 
   useEffect(() => {

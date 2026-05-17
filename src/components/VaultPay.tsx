@@ -38,7 +38,7 @@ const ResellerPage = memo(({ user }: { user: any }) => {
   };
 
   const whatsappMsg = `Hello VaultPay Support, I would like to upgrade my account and activate my custom whitelabel reseller VTU platform!\n\nMy Details:\n- Name: ${user.name}\n- User UUID: ${user.id}\n- Brand Name: [My Brand Name]\n- Desired Subdomain: [mybrand]`;
-  const whatsappUrl = `https://wa.me/2349071066072?text=${encodeURIComponent(whatsappMsg)}`;
+  const whatsappUrl = `https://wa.me/2348065136221?text=${encodeURIComponent(whatsappMsg)}`;
 
   return (
     <div className="fade-up" style={{ maxWidth: 800, margin: "0 auto", paddingBottom: 40 }}>
