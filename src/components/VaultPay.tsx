@@ -26,6 +26,7 @@ import SettingsPage from "./dashboard/SettingsPage";
 import SupportPage from "./dashboard/SupportPage";
 import AIChatbot from "./ui/AIChatbot";
 import CursorWanderCard from "./ui/cursor-wander-card";
+import WhatsAppWidget from "./ui/WhatsAppWidget";
 
 // Whitelabel Reseller Onboarding Component
 const ResellerPage = memo(({ user }: { user: any }) => {
@@ -237,20 +238,20 @@ export default function VaultPay() {
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000);
   }, []);
 
-  // Helper: fetch admin status from profiles table with error handling
+  // Helper: fetch admin status from profiles table with safer .limit(1) query
   const fetchUserWithRole = useCallback(async (sessionUser: any) => {
     try {
       const { data, error } = await supabase
         .from("profiles")
         .select("is_admin")
         .eq("id", sessionUser.id)
-        .single();
+        .limit(1);
 
       return {
         id: sessionUser.id,
         email: sessionUser.email!,
         name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
-        isAdmin: (!error && data?.is_admin === true) ? true : false
+        isAdmin: (!error && data && data.length > 0 && data[0].is_admin === true) ? true : false
       };
     } catch {
       return {
@@ -528,6 +529,9 @@ export default function VaultPay() {
 
       {/* AI Chatbot */}
       <AIChatbot />
+      
+      {/* WhatsApp Widget */}
+      <WhatsAppWidget />
 
       {/* Toasts */}
       <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10000, display: "flex", flexDirection: "column", gap: 10 }}>
