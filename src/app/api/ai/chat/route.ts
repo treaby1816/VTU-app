@@ -44,20 +44,69 @@ export async function POST(req: Request) {
 
       const context = documents?.map((doc: any) => doc.content).join("\n\n") || "";
 
-      // 3. Generate response with OpenAI
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are VaultAI for VaultPay (Nigerian VTU). Context: ${context}`
-          },
-          { role: "user", content: message }
-        ],
-        max_tokens: 500,
-      });
+      // 3. Generate response with Hybrid AI Engine (Priority: Gemini 1.5 Flash -> OpenAI gpt-4o-mini)
+      let responseText = "";
+      const geminiKey = process.env.GEMINI_API_KEY;
 
-      return NextResponse.json({ text: response.choices[0].message.content });
+      if (geminiKey) {
+        try {
+          console.log("[AI Chat] Generating response via Google Gemini 1.5 Flash...");
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    role: "user",
+                    parts: [{ text: message }]
+                  }
+                ],
+                systemInstruction: {
+                  parts: [{ text: `You are VaultAI for VaultPay (Nigerian VTU). Answer the user politely based on this context:\n${context}` }]
+                },
+                generationConfig: {
+                  maxOutputTokens: 500,
+                  temperature: 0.7
+                }
+              })
+            }
+          );
+
+          if (res.ok) {
+            const data = await res.json();
+            responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          } else {
+            console.warn(`[AI Chat] Gemini API returned status ${res.status}`);
+          }
+        } catch (gemError) {
+          console.warn("⚠️ Gemini request failed, attempting OpenAI fallback:", gemError);
+        }
+      }
+
+      // If Gemini wasn't configured or failed, try OpenAI
+      if (!responseText && process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== "dummy-key-for-build") {
+        console.log("[AI Chat] Falling back to OpenAI gpt-4o-mini...");
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are VaultAI for VaultPay (Nigerian VTU). Context: ${context}`
+            },
+            { role: "user", content: message }
+          ],
+          max_tokens: 500,
+        });
+        responseText = response.choices[0].message.content || "";
+      }
+
+      if (!responseText) {
+        throw new Error("No active AI providers were able to process the request.");
+      }
+
+      return NextResponse.json({ text: responseText });
 
     } catch (aiError: any) {
       console.warn("⚠️ AI Quota exceeded or error. Falling back to local search.");
