@@ -226,52 +226,84 @@ export default function VaultPay() {
   const [showBalance, setShowBalance] = useState(true);
   const toastId = useRef(0);
 
+  // Ref to prevent duplicate welcome screen triggers across re-renders
+  const welcomeHandledRef = useRef(false);
+  // Ref to track if initial session has been loaded (skip welcome for it)
+  const initialSessionLoaded = useRef(false);
+
   const addToast = useCallback((type: string, title: string, msg?: string) => {
     const id = ++toastId.current;
     setToasts(p => [...p, { id, type, title, msg }]);
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000);
   }, []);
 
+  // Helper: fetch admin status from profiles table with error handling
+  const fetchUserWithRole = useCallback(async (sessionUser: any) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", sessionUser.id)
+        .single();
+
+      return {
+        id: sessionUser.id,
+        email: sessionUser.email!,
+        name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
+        isAdmin: (!error && data?.is_admin === true) ? true : false
+      };
+    } catch {
+      return {
+        id: sessionUser.id,
+        email: sessionUser.email!,
+        name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
+        isAdmin: false
+      };
+    }
+  }, []);
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }: any) => {
+    // 1. Load existing session on mount (NEVER show welcome for this)
+    supabase.auth.getSession().then(async ({ data: { session } }: any) => {
+      initialSessionLoaded.current = true;
       if (session?.user) {
-        supabase.from("profiles").select("is_admin").eq("id", session.user.id).single().then(({ data }: any) => {
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-            isAdmin: data?.is_admin || false
-          });
-        });
+        const userData = await fetchUserWithRole(session.user);
+        setUser(userData);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+    // 2. Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       if (session?.user) {
-        supabase.from("profiles").select("is_admin").eq("id", session.user.id).single().then(({ data }: any) => {
-          const userData = {
-            id: session.user.id,
-            email: session.user.email!,
-            name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-            isAdmin: data?.is_admin || false
-          };
-          setUser(userData);
-        });
-        
-        // Only show welcome overlay if this is a manual user-initiated sign in
-        const justLoggedIn = sessionStorage.getItem('justLoggedIn');
-        if (event === 'SIGNED_IN' && justLoggedIn === 'true') {
-          setShowWelcome(true);
-          sessionStorage.removeItem('justLoggedIn');
+        const userData = await fetchUserWithRole(session.user);
+        setUser(userData);
+
+        // ONLY show welcome for genuine user-initiated sign-ins:
+        // - Must be SIGNED_IN event (not INITIAL_SESSION, TOKEN_REFRESHED, etc.)
+        // - Must have the justLoggedIn sessionStorage flag (set by AuthScreen before login)
+        // - Must not have already been handled in this component lifecycle
+        // - Must have already loaded the initial session (skip the very first SIGNED_IN)
+        if (
+          event === "SIGNED_IN" &&
+          !welcomeHandledRef.current &&
+          initialSessionLoaded.current
+        ) {
+          const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+          if (justLoggedIn === "true") {
+            welcomeHandledRef.current = true;
+            sessionStorage.removeItem("justLoggedIn");
+            setShowWelcome(true);
+          }
         }
       } else {
         setUser(null);
         setShowWelcome(false);
+        welcomeHandledRef.current = false;
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser]);
+  }, [setUser, fetchUserWithRole]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

@@ -33,6 +33,7 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
   width = "380px",
 }) => {
   const cardRef = useRef<HTMLDivElement>(null)
+  const glareRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
   const mousePos = useRef({ x: 0, y: 0 })
   const frameRef = useRef<number>()
@@ -56,7 +57,6 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
       let targetScale = 1
 
       if (isHovered) {
-        // Compute targets based on absolute cursor distance to the card center
         const rect = cardRef.current.getBoundingClientRect()
         const centerX = rect.width / 2
         const centerY = rect.height / 2
@@ -73,12 +73,12 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
       }
 
       // Physics interpolation (lerp)
-      const lerpFactor = 0.08 // smooth speed multiplier
+      const lerpFactor = 0.08
       currentRotX.current += (targetRotX - currentRotX.current) * lerpFactor
       currentRotY.current += (targetRotY - currentRotY.current) * lerpFactor
       currentScale.current += (targetScale - currentScale.current) * lerpFactor
 
-      // Apply highly optimized 3D transforms directly to GPU layer
+      // Apply transforms directly — NO CSS transition on transform
       cardRef.current.style.transform = `perspective(1000px) rotateX(${currentRotX.current}deg) rotateY(${currentRotY.current}deg) scale3d(${currentScale.current}, ${currentScale.current}, ${currentScale.current})`
 
       frameRef.current = requestAnimationFrame(updateCard)
@@ -92,44 +92,38 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
-    
     const rect = cardRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
-    
-    // Save absolute coordinates to cursor position reference
     mousePos.current = { x, y }
     
-    // Update dynamic glass glare overlay position
-    const glare = cardRef.current.querySelector('.card-glare') as HTMLDivElement
-    if (glare) {
-      glare.style.opacity = '1'
-      glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.25) 0%, transparent 80%)`
+    if (glareRef.current) {
+      glareRef.current.style.opacity = '1'
+      glareRef.current.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.25) 0%, transparent 80%)`
     }
   }
 
-  const handleMouseEnter = () => {
-    setIsHovered(true)
-  }
-
+  const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => {
     setIsHovered(false)
-    const glare = cardRef.current?.querySelector('.card-glare') as HTMLDivElement
-    if (glare) glare.style.opacity = '0'
+    if (glareRef.current) glareRef.current.style.opacity = '0'
   }
 
   return (
-    <div 
-      className={`relative ${className}`}
-      style={{ width, height, perspective: "1000px" }}
-    >
+    <div style={{ width, height, perspective: "1000px", position: "relative" }} className={className}>
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="card-body relative w-full h-full rounded-[24px] cursor-pointer transition-shadow duration-500 ease-out preserve-3d"
         style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          borderRadius: 24,
+          cursor: "pointer",
+          transformStyle: "preserve-3d",
+          willChange: "transform",
           background: "#050A18",
           border: "1px solid rgba(255,255,255,0.1)",
           boxShadow: `0 20px 50px -10px ${theme.glowColor}`,
@@ -137,96 +131,93 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
         }}
       >
         {/* Animated Background Layers */}
-        <div className="absolute inset-0 nebula-bg" />
-        <div className="absolute inset-0 aurora-bg" />
-        <div className="absolute inset-0 card-glare pointer-events-none transition-opacity duration-300 opacity-0" />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "radial-gradient(circle at 20% 30%, rgba(0, 212, 170, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 150, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(128, 0, 255, 0.05) 0%, transparent 70%)",
+          filter: "blur(40px)",
+          animation: "nebula-drift 20s linear infinite alternate",
+        }} />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(135deg, rgba(0, 212, 170, 0.05) 0%, transparent 40%, rgba(0, 150, 255, 0.05) 100%)",
+          mixBlendMode: "overlay",
+          animation: "aurora-pulse 10s ease-in-out infinite alternate",
+        }} />
+        <div ref={glareRef} style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          transition: "opacity 0.3s", opacity: 0,
+        }} />
         
         {/* Star Field */}
-        <div className="absolute inset-0 stars-container">
-           <div className="star s1" />
-           <div className="star s2" />
-           <div className="star s3" />
+        <div style={{ position: "absolute", inset: 0 }}>
+          <div style={{ position: "absolute", background: "white", borderRadius: "50%", opacity: 0.3, width: 1, height: 1, top: "20%", left: "30%", boxShadow: "0 0 5px white" }} />
+          <div style={{ position: "absolute", background: "white", borderRadius: "50%", opacity: 0.3, width: 2, height: 2, top: "60%", left: "80%", boxShadow: "0 0 8px white", animation: "twinkle 3s infinite" }} />
+          <div style={{ position: "absolute", background: "white", borderRadius: "50%", opacity: 0.3, width: 1, height: 1, top: "10%", left: "70%" }} />
         </div>
 
-        {/* Content */}
-        <div className="relative h-full w-full p-8 flex flex-col justify-between z-10">
+        {/* Content — ALL inline styles, no Tailwind classes */}
+        <div style={{
+          position: "relative", height: "100%", width: "100%",
+          padding: "24px 28px", display: "flex", flexDirection: "column",
+          justifyContent: "space-between", zIndex: 10,
+        }}>
           {/* Top Row */}
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00D4AA] to-[#00b896] flex items-center justify-center shadow-lg">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: 12,
+                background: "linear-gradient(to bottom right, #00D4AA, #00b896)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 8px 20px rgba(0,212,170,0.3)",
+              }}>
                 <Sparkles size={24} color="#000" fill="#000" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-black text-white leading-none tracking-tighter">{logoText.topText}</span>
-                <span className="text-[10px] font-bold text-[#00D4AA] tracking-[0.3em] leading-none">{logoText.bottomText}</span>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.05em" }}>{logoText.topText}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#00D4AA", letterSpacing: "0.3em", lineHeight: 1 }}>{logoText.bottomText}</span>
               </div>
             </div>
-            <Wifi className="text-white/40 rotate-90" size={24} />
+            <Wifi style={{ color: "rgba(255,255,255,0.4)", transform: "rotate(90deg)" }} size={24} />
           </div>
 
           {/* Chip */}
-          <div className="w-14 h-10 rounded-lg bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 p-[1px] relative">
-            <div className="w-full h-full rounded-[7px] bg-[#222] opacity-20 border border-black/20" />
-            <div className="absolute inset-0 grid grid-cols-3 gap-[1px] p-2 opacity-40">
-               {Array.from({length: 6}).map((_, i) => <div key={i} className="border-t border-r border-black" />)}
+          <div style={{
+            width: 56, height: 40, borderRadius: 8,
+            background: "linear-gradient(to bottom right, #fde68a, #facc15, #ca8a04)",
+            padding: 1, position: "relative",
+          }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: 7, background: "#222", opacity: 0.2, border: "1px solid rgba(0,0,0,0.2)" }} />
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, padding: 8, opacity: 0.4,
+            }}>
+              {Array.from({length: 6}).map((_, i) => <div key={i} style={{ borderTop: "1px solid black", borderRight: "1px solid black" }} />)}
             </div>
           </div>
 
           {/* Bottom Row */}
-          <div className="flex justify-between items-end">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
-              <p className="text-[9px] font-bold text-white/40 tracking-[0.2em] mb-1">CARDHOLDER</p>
-              <p className="text-sm font-bold text-white tracking-widest uppercase">{cardholderName}</p>
+              <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: "0.2em", marginBottom: 4 }}>CARDHOLDER</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#fff", letterSpacing: "0.1em", textTransform: "uppercase" }}>{cardholderName}</p>
             </div>
-            <div className="flex -space-x-4">
-              <div className="w-10 h-10 rounded-full bg-[#ff4b2b] opacity-80" />
-              <div className="w-10 h-10 rounded-full bg-[#ffb400] opacity-80" />
+            <div style={{ display: "flex" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#ff4b2b", opacity: 0.8 }} />
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#ffb400", opacity: 0.8, marginLeft: -16 }} />
             </div>
           </div>
         </div>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .preserve-3d {
-          transform-style: preserve-3d;
-        }
-
-        .nebula-bg {
-          background: 
-            radial-gradient(circle at 20% 30%, rgba(0, 212, 170, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(0, 150, 255, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(128, 0, 255, 0.05) 0%, transparent 70%);
-          filter: blur(40px);
-          animation: nebula-drift 20s linear infinite alternate;
-        }
-
         @keyframes nebula-drift {
           from { transform: scale(1); }
           to { transform: scale(1.2) translate(5%, 5%); }
         }
-
-        .aurora-bg {
-          background: linear-gradient(135deg, rgba(0, 212, 170, 0.05) 0%, transparent 40%, rgba(0, 150, 255, 0.05) 100%);
-          mix-blend-mode: overlay;
-          animation: aurora-pulse 10s ease-in-out infinite alternate;
-        }
-
         @keyframes aurora-pulse {
           from { opacity: 0.2; }
           to { opacity: 0.6; }
         }
-
-        .star {
-          position: absolute;
-          background: white;
-          border-radius: 50%;
-          opacity: 0.3;
-        }
-        
-        .s1 { width: 1px; height: 1px; top: 20%; left: 30%; box-shadow: 0 0 5px white; }
-        .s2 { width: 2px; height: 2px; top: 60%; left: 80%; box-shadow: 0 0 8px white; animation: twinkle 3s infinite; }
-        .s3 { width: 1px; height: 1px; top: 10%; left: 70%; }
-
         @keyframes twinkle {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.5); }
