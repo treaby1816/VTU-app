@@ -44,15 +44,15 @@ export async function POST(req: Request) {
 
       const context = documents?.map((doc: any) => doc.content).join("\n\n") || "";
 
-      // 3. Generate response with Hybrid AI Engine (Priority: Gemini 1.5 Flash -> OpenAI gpt-4o-mini)
+      // 3. Generate response with Hybrid AI Engine (Priority: Gemini 2.0 Flash -> OpenAI gpt-4o-mini)
       let responseText = "";
       const geminiKey = process.env.GEMINI_API_KEY;
 
       if (geminiKey) {
         try {
-          console.log("[AI Chat] Generating response via Google Gemini 1.5 Flash...");
+          console.log("[AI Chat] Generating response via Google Gemini 2.0 Flash...");
           const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

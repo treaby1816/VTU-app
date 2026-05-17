@@ -12,6 +12,16 @@ export default function WhatsAppWidget() {
     window.open(url, "_blank");
   };
 
+  const [isAIChatOpen, setIsAIChatOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handler = (e: any) => setIsAIChatOpen(e.detail);
+    window.addEventListener('ai-chat-open', handler);
+    return () => window.removeEventListener('ai-chat-open', handler);
+  }, []);
+
+  if (isAIChatOpen) return null;
+
   return (
     <div 
       onClick={handleOpenWhatsApp}

@@ -87,6 +87,11 @@ export default function AIChatbot() {
     }
   }, [messages, isOpen, isTyping]);
 
+  // Broadcast open state to other components
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('ai-chat-open', { detail: isOpen }));
+  }, [isOpen]);
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -205,7 +210,7 @@ export default function AIChatbot() {
                   color: msg.sender === "user" ? "var(--primary)" : "var(--text)",
                   fontSize: 14, lineHeight: 1.5
                 }}>
-                  {msg.id === "1" ? <TypewriterText text={msg.text} delay={25} /> : msg.text}
+                  {msg.id === "msg-1" ? <TypewriterText text={msg.text} delay={25} /> : msg.text}
                 </div>
               </div>
             ))}
