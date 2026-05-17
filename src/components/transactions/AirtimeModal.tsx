@@ -6,8 +6,8 @@ import { Modal, InputField, NetworkSelector } from "../ui/Modals";
 import { fmtN, NETWORKS, sleep } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
-export default function AirtimeModal({ onClose, balance, onSubmit, isMobile }: any) {
-  const [network, setNetwork] = useState("mtn");
+export default function AirtimeModal({ onClose, balance, onSubmit, isMobile, initialNetwork = "mtn" }: any) {
+  const [network, setNetwork] = useState(initialNetwork);
   const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState(1);

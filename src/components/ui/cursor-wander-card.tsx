@@ -111,6 +111,20 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
 
   return (
     <div style={{ width, height, perspective: "1000px", position: "relative" }} className={className}>
+      {/* Inline SVG Filter to permanently turn solid white backgrounds transparent */}
+      <svg width="0" height="0" style={{ position: "absolute", pointerEvents: "none" }}>
+        <defs>
+          <filter id="remove-white" colorInterpolationFilters="sRGB">
+            <feColorMatrix
+              type="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      -1 -1 -1 0 3"
+            />
+          </filter>
+        </defs>
+      </svg>
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
@@ -168,10 +182,8 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
                 src="/images/vaultpay_logo.png" 
                 alt="VaultPay Logo" 
                 style={{ 
-                  width: 48, height: 48, objectFit: "contain", 
-                  borderRadius: "50%", background: "#fff", padding: 2,
-                  clipPath: "circle(50% at 50% 50%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                  width: 48, height: 48, objectFit: "contain",
+                  filter: "url(#remove-white) drop-shadow(0 4px 10px rgba(0,212,170,0.4))",
                 }}
               />
               <div style={{ display: "flex", flexDirection: "column" }}>

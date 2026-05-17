@@ -7,8 +7,8 @@ import { fmtN, NETWORKS, sleep } from "@/lib/utils";
 import { DATA_BUNDLES } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 
-export default function DataModal({ onClose, balance, onSubmit, isMobile }: any) {
-  const [network, setNetwork] = useState("mtn");
+export default function DataModal({ onClose, balance, onSubmit, isMobile, initialNetwork = "mtn" }: any) {
+  const [network, setNetwork] = useState(initialNetwork);
   const [phone, setPhone] = useState("");
   const [selectedPlan, setPlan] = useState<any>(null);
   const [step, setStep] = useState(1);

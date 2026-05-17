@@ -336,6 +336,7 @@ export default function VaultPay() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [modal, setModal] = useState<string | null>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<string>("mtn");
   const [toasts, setToasts] = useState<any[]>([]);
   const [showBalance, setShowBalance] = useState(true);
   const [prediction, setPrediction] = useState<string | null>(null);
@@ -498,8 +499,8 @@ export default function VaultPay() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
       {/* Modals */}
-      {modal === "airtime" && <AirtimeModal onClose={() => setModal(null)} balance={balance} onSubmit={handleTransaction} isMobile={isMobile} />}
-      {modal === "data" && <DataModal onClose={() => setModal(null)} balance={balance} onSubmit={handleTransaction} isMobile={isMobile} />}
+      {modal === "airtime" && <AirtimeModal onClose={() => setModal(null)} balance={balance} onSubmit={handleTransaction} isMobile={isMobile} initialNetwork={selectedNetwork} />}
+      {modal === "data" && <DataModal onClose={() => setModal(null)} balance={balance} onSubmit={handleTransaction} isMobile={isMobile} initialNetwork={selectedNetwork} />}
       {modal === "fund" && <FundModal onClose={() => setModal(null)} onSubmit={handleTransaction} isMobile={isMobile} />}
       {modal === "logout" && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -634,39 +635,26 @@ export default function VaultPay() {
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 0.5 }}>SUPPORTED NETWORKS</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
                   {[
-                    { name: "MTN", logo: "/images/mtn.png" },
-                    { name: "Airtel", logo: "/images/airtel.png" },
-                    { name: "Glo", logo: "/images/glo.png" },
-                    { name: "9mobile", logo: "/images/9mobile.png" }
+                    { id: "mtn", name: "MTN", logo: "/images/mtn.png" },
+                    { id: "airtel", name: "Airtel", logo: "/images/airtel.png" },
+                    { id: "glo", name: "Glo", logo: "/images/glo.png" },
+                    { id: "9mobile", name: "9mobile", logo: "/images/9mobile.png" }
                   ].map((n, idx) => (
-                    <div key={idx} style={{ aspectRatio: "1/1", width: "100%", borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, transition: "transform .3s", cursor: "pointer" }} onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <div 
+                      key={idx} 
+                      onClick={() => { setSelectedNetwork(n.id); setModal("airtime"); }}
+                      style={{ aspectRatio: "1/1", width: "100%", borderRadius: 24, overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", padding: 6, transition: "transform .3s", cursor: "pointer" }} 
+                      onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"} 
+                      onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}
+                    >
                       <img src={n.logo} alt={n.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 16 }} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* AI Predictor Card */}
-              <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 20, border: "1px solid var(--border)", marginBottom: 32 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Zap size={18} color="var(--primary)" />
-                  </div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16 }}>AI Spend Predictor</h3>
-                </div>
-                {loadingPrediction ? (
-                  <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Analyzing your spending patterns...</p>
-                ) : (
-                  <p style={{ color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>{prediction}</p>
-                )}
-              </div>
-
-              {/* Spend Chart */}
+              {/* Quick Actions (Moved up for optimal UX) */}
               <div style={{ marginBottom: 32 }}>
-                <SpendChart transactions={transactions} />
-              </div>
-
-              <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>Quick Actions</h3>
                   <button onClick={() => setActivePage("transactions")} style={{ background: "none", border: "none", color: "#00D4AA", fontWeight: 600, fontSize: 13 }}>View All</button>
@@ -699,6 +687,26 @@ export default function VaultPay() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* AI Predictor Card */}
+              <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 20, border: "1px solid var(--border)", marginBottom: 32 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(0,212,170,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Zap size={18} color="var(--primary)" />
+                  </div>
+                  <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16 }}>AI Spend Predictor</h3>
+                </div>
+                {loadingPrediction ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Analyzing your spending patterns...</p>
+                ) : (
+                  <p style={{ color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>{prediction}</p>
+                )}
+              </div>
+
+              {/* Spend Chart */}
+              <div style={{ marginBottom: 32 }}>
+                <SpendChart transactions={transactions} />
               </div>
 
               <div>
