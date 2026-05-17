@@ -27,9 +27,47 @@ export default function WhatsAppWidget() {
         display: "flex", alignItems: "center", justifyContent: "center",
         cursor: "pointer", border: "2px solid rgba(255,255,255,0.2)"
       }}
-      title="Chat with Support on WhatsApp"
     >
       <MessageCircle size={32} color="#fff" />
+      {/* Custom Tooltip */}
+      <div className="wa-tooltip">Chat with us on WhatsApp</div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .wa-tooltip {
+          position: absolute;
+          right: 80px;
+          top: 50%;
+          transform: translateY(-50%) scale(0.9);
+          background: #111827;
+          color: #fff;
+          padding: 8px 14px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 600;
+          white-space: nowrap;
+          pointer-events: none;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .zoom-slow:hover .wa-tooltip {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(-50%) scale(1);
+        }
+        .wa-tooltip::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          right: -5px;
+          transform: translateY(-50%);
+          border-width: 6px 0 6px 6px;
+          border-style: solid;
+          border-color: transparent transparent transparent #111827;
+        }
+      `}} />
     </div>
   );
 }

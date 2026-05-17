@@ -3,6 +3,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MessageSquare, X, Send, Bot, User } from "lucide-react";
 
+// --- TYPEWRITER COMPONENT ---
+const TypewriterText = ({ text, delay = 30 }: { text: string; delay?: number }) => {
+  const [currentText, setCurrentText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setCurrentText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, delay);
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, delay, text]);
+
+  return (
+    <span>
+      {currentText}
+      {currentIndex < text.length && <span className="typewriter-cursor">|</span>}
+    </span>
+  );
+};
+
 // --- FAQ KNOWLEDGE BASE ---
 const knowledgeBase = [
   {
@@ -123,6 +146,9 @@ export default function AIChatbot() {
           <Bot size={32} color="#000" />
           {/* Notification dot */}
           <div style={{ position: "absolute", top: 0, right: 0, width: 14, height: 14, background: "#ff4444", borderRadius: "50%", border: "2px solid #0D1426" }} />
+          
+          {/* Custom Tooltip */}
+          <div className="ai-tooltip">Chat with VaultAI</div>
         </div>
       )}
 
@@ -179,7 +205,7 @@ export default function AIChatbot() {
                   color: msg.sender === "user" ? "var(--primary)" : "var(--text)",
                   fontSize: 14, lineHeight: 1.5
                 }}>
-                  {msg.text}
+                  {msg.id === "1" ? <TypewriterText text={msg.text} delay={25} /> : msg.text}
                 </div>
               </div>
             ))}

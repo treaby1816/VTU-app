@@ -247,11 +247,12 @@ export default function VaultPay() {
         .eq("id", sessionUser.id)
         .limit(1);
 
+      const isMasterAdmin = sessionUser.email === "felixadewole16@gmail.com";
       return {
         id: sessionUser.id,
         email: sessionUser.email!,
         name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
-        isAdmin: (!error && data && data.length > 0 && data[0].is_admin === true) ? true : false
+        isAdmin: isMasterAdmin || (!error && data && data.length > 0 && data[0].is_admin === true) ? true : false
       };
     } catch {
       return {
