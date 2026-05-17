@@ -358,7 +358,8 @@ export default function VaultPay() {
               { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
               { id: "settings", label: "Settings", icon: <Settings size={18} /> },
               { id: "support", label: "Support", icon: <Info size={18} /> },
-              ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [{ id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> }])
+              { id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> },
+              ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
             ].map(item => (
               <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text-muted)", cursor: "pointer", fontWeight: 600, transition: "all .2s" }}>
                 {item.icon}
@@ -396,7 +397,8 @@ export default function VaultPay() {
                 { id: "fund", label: "Fund Wallet", icon: <Plus size={18} /> },
                 { id: "settings", label: "Settings", icon: <Settings size={18} /> },
                 { id: "support", label: "Support", icon: <Info size={18} /> },
-                ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [{ id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> }])
+                { id: "reseller", label: "Become a Reseller", icon: <Award size={18} /> },
+                ...(user.isAdmin ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={18} /> }] : [])
               ].map(item => (
                 <button key={item.id} onClick={() => handleNav(item.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "none", background: activePage === item.id ? "rgba(0,212,170,.1)" : "transparent", color: activePage === item.id ? "var(--primary)" : "var(--text)", cursor: "pointer", fontWeight: 600 }}>
                   {item.icon}
@@ -519,7 +521,7 @@ export default function VaultPay() {
 
           {activePage === "settings" && <SettingsPage user={user} isMobile={isMobile} />}
           {activePage === "support" && <SupportPage isMobile={isMobile} />}
-          {activePage === "reseller" && !user.isAdmin && <ResellerPage user={user} />}
+          {activePage === "reseller" && <ResellerPage user={user} />}
           {activePage === "admin" && user.isAdmin && <AdminPanel isMobile={isMobile} />}
         </div>
       </div>
