@@ -11,11 +11,35 @@ export default function SettingsPage({ user, isMobile }: { user: any, isMobile: 
     name: user?.user_metadata?.full_name || "",
     phone: user?.user_metadata?.phone || "",
     currentPassword: "",
-    newPassword: ""
+    newPassword: "",
+    pin: ""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdatePin = async () => {
+    if (form.pin.length !== 4) {
+      setMessage({ type: "error", text: "PIN must be exactly 4 digits." });
+      return;
+    }
+    setLoading(true);
+    setMessage(null);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ transaction_pin: form.pin })
+        .eq("id", user.id);
+      
+      if (error) throw error;
+      setMessage({ type: "success", text: "Transaction PIN updated successfully!" });
+      setForm(prev => ({ ...prev, pin: "" }));
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message || "Failed to update PIN." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdateProfile = async () => {
@@ -125,6 +149,27 @@ export default function SettingsPage({ user, isMobile }: { user: any, isMobile: 
 
             <button onClick={handleUpdatePassword} disabled={loading || !form.newPassword} style={{ marginTop: 8, padding: "14px 24px", borderRadius: 12, border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontWeight: 700, cursor: (loading || !form.newPassword) ? "not-allowed" : "pointer", alignSelf: "flex-start", opacity: form.newPassword ? 1 : 0.5 }}>
               Update Password
+            </button>
+          </div>
+        </div>
+        {/* Transaction PIN Settings */}
+        <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: isMobile ? 20 : 32, border: "1px solid var(--border)" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
+            <Lock size={20} color="var(--primary)" /> Transaction PIN
+          </h2>
+          
+          <div style={{ display: "grid", gap: 16 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>{user?.hasPin ? "Change PIN" : "Set 4-Digit PIN"}</label>
+              <div style={{ position: "relative" }}>
+                <Lock size={16} style={{ position: "absolute", left: 14, top: 14, color: "var(--text-muted)" }} />
+                <input type="password" name="pin" maxLength={4} value={form.pin} onChange={handleChange} placeholder="****" style={{ width: "100%", padding: "14px 14px 14px 40px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", outline: "none" }} />
+              </div>
+              <p style={{ color: "var(--text-muted)", fontSize: 11, marginTop: 4 }}>This PIN will be required for all airtime and data purchases.</p>
+            </div>
+
+            <button onClick={handleUpdatePin} disabled={loading || form.pin.length !== 4} style={{ marginTop: 8, padding: "14px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#000", fontWeight: 700, cursor: (loading || form.pin.length !== 4) ? "not-allowed" : "pointer", alignSelf: "flex-start", opacity: form.pin.length === 4 ? 1 : 0.5 }}>
+              {user?.hasPin ? "Update PIN" : "Set PIN"}
             </button>
           </div>
         </div>

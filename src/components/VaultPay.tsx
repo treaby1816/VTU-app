@@ -243,16 +243,18 @@ export default function VaultPay() {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("is_admin")
+        .select("is_admin, transaction_pin")
         .eq("id", sessionUser.id)
         .limit(1);
 
       const isMasterAdmin = sessionUser.email === "felixadewole16@gmail.com";
+      const hasPin = data && data.length > 0 && data[0].transaction_pin ? true : false;
       return {
         id: sessionUser.id,
         email: sessionUser.email!,
         name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
-        isAdmin: isMasterAdmin || (!error && data && data.length > 0 && data[0].is_admin === true) ? true : false
+        isAdmin: isMasterAdmin || (!error && data && data.length > 0 && data[0].is_admin === true) ? true : false,
+        hasPin: hasPin
       };
     } catch {
       return {

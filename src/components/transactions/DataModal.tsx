@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Phone, CheckCircle2, XCircle } from "lucide-react";
 import { Modal, InputField, NetworkSelector } from "../ui/Modals";
 import { fmtN, NETWORKS, sleep } from "@/lib/utils";
@@ -13,8 +13,29 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
   const [selectedPlan, setPlan] = useState<any>(null);
   const [step, setStep] = useState(1);
   const [txResult, setTxResult] = useState<any>(null);
+  const [pin, setPin] = useState("");
+  const [userPin, setUserPin] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data } = await supabase.from("profiles").select("transaction_pin").eq("id", session.user.id).limit(1);
+        setUserPin(data?.[0]?.transaction_pin);
+      }
+    };
+    fetchPin();
+  }, []);
 
   const handleBuy = async () => {
+    if (!userPin) {
+      alert("Please set your Transaction PIN in Settings first.");
+      return;
+    }
+    if (pin !== userPin) {
+      alert("Invalid Transaction PIN!");
+      return;
+    }
     setStep(3);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -83,7 +104,10 @@ export default function DataModal({ onClose, balance, onSubmit, isMobile }: any)
               </div>
             ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ marginTop: 4 }}>
+            <InputField label="Enter 4-Digit PIN" type="password" maxLength={4} placeholder="****" value={pin} onChange={setPin} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
             <button onClick={() => setStep(1)} style={{ padding: "12px 0", borderRadius: 12, border: "1px solid #1E2D4A", background: "transparent", color: "#94a3b8", cursor: "pointer", fontWeight: 600 }}>← Back</button>
             <button onClick={handleBuy} style={{ padding: "12px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg,#00D4AA,#00b896)", color: "#000", fontWeight: 700 }}>Confirm</button>
           </div>
