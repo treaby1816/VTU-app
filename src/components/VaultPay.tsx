@@ -29,73 +29,181 @@ import CursorWanderCard from "./ui/cursor-wander-card";
 import WhatsAppWidget from "./ui/WhatsAppWidget";
 
 // Whitelabel Reseller Onboarding Component
+// Whitelabel Reseller Onboarding Component
 const ResellerPage = memo(({ user }: { user: any }) => {
   const [copied, setCopied] = useState(false);
+  const [isReseller, setIsReseller] = useState(false);
+  const [tenant, setTenant] = useState<any>(null);
+  const [margins, setMargins] = useState({ airtime: 0, data: 0 });
+  const [savingMargins, setSavingMargins] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [generatingKey, setGeneratingKey] = useState(false);
   
+  useEffect(() => {
+    const checkReseller = async () => {
+      const { data } = await supabase
+        .from("tenants")
+        .select("*")
+        .eq("parent_id", user.id)
+        .limit(1);
+      if (data && data.length > 0) {
+        setIsReseller(true);
+        setTenant(data[0]);
+        // Assuming margins are stored in the tenant or profiles table
+        // Let's assume they are in the tenant table for now
+        setMargins({ 
+          airtime: data[0].airtime_margin || 0, 
+          data: data[0].data_margin || 0 
+        });
+        setApiKey(data[0].api_key || "");
+      }
+    };
+    if (user?.id) checkReseller();
+  }, [user?.id]);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(user.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSaveMargins = async () => {
+    setSavingMargins(true);
+    const { error } = await supabase
+      .from("tenants")
+      .update({ 
+        airtime_margin: margins.airtime, 
+        data_margin: margins.data 
+      })
+      .eq("id", tenant.id);
+    
+    if (!error) {
+      alert("Profit margins updated successfully!");
+    }
+    setSavingMargins(false);
+  };
+
+  const handleGenerateApiKey = async () => {
+    setGeneratingKey(true);
+    const newKey = "sk_live_" + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    const { error } = await supabase
+      .from("tenants")
+      .update({ api_key: newKey })
+      .eq("id", tenant.id);
+    
+    if (!error) {
+      setApiKey(newKey);
+      alert("New API Key generated!");
+    }
+    setGeneratingKey(false);
+  };
+
   const whatsappMsg = `Hello VaultPay Support, I would like to upgrade my account and activate my custom whitelabel reseller VTU platform!\n\nMy Details:\n- Name: ${user.name}\n- User UUID: ${user.id}\n- Brand Name: [My Brand Name]\n- Desired Subdomain: [mybrand]`;
   const whatsappUrl = `https://wa.me/2348065136221?text=${encodeURIComponent(whatsappMsg)}`;
 
+  if (!isReseller) {
+    return (
+      <div className="fade-up" style={{ maxWidth: 800, margin: "0 auto", paddingBottom: 40 }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(0,212,170,.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <Award size={32} color="var(--primary)" />
+          </div>
+          <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 28, color: "var(--text)" }}>Become a Whitelabel Reseller</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: 14, marginTop: 4 }}>Launch your custom branded VTU website and earn passive income!</p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
+          {/* Why become a reseller? */}
+          <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)" }}>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>🚀 Reseller Brand Features</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+              {[
+                { t: "Custom Branding", d: "Your custom business name, logo, HSL color palette, and custom sub-domain/domain setup." },
+                { t: "Double-Wallet Ledger", d: "Prepaid automatic balance splits. Customers pay retail, and you pay wholesale, keeping 100% of the markups!" },
+                { t: "Automated VTU API Routing", d: "Zero server configurations. Purchases route instantly through active high-speed providers." },
+                { t: "Isolated Tenancy Security", d: "Full Row-Level Security (RLS). Resellers can only see transaction reports of their own users." }
+              ].map((f, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,0.02)", padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <h4 style={{ color: "var(--primary)", fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{f.t}</h4>
+                  <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.5 }}>{f.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upgrade Activation */}
+          <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)", textAlign: "center" }}>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Ready to Activate?</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Upgrading is automated. Just copy your Profile UUID below and click the button to message our Admin Support on WhatsApp for provisioning!</p>
+
+            <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 20px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, maxWidth: 500, margin: "0 auto 24px", textAlign: "left" }}>
+              <div>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Your Profile User ID (UUID)</span>
+                <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 700, fontFamily: "monospace", marginTop: 4, wordBreak: "break-all" }}>{user.id}</p>
+              </div>
+              <button 
+                onClick={handleCopy}
+                style={{ padding: "8px 16px", borderRadius: 8, background: copied ? "rgba(16,185,129,0.15)" : "var(--primary)", border: "none", color: copied ? "#10b981" : "#000", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                {copied ? "Copied! ✓" : "Copy ID"}
+              </button>
+            </div>
+
+            <a 
+              href={whatsappUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#25D366", color: "#fff", padding: "14px 28px", borderRadius: 12, fontWeight: 700, textDecoration: "none", fontSize: 14, boxShadow: "0 8px 24px rgba(37,211,102,.3)" }}
+            >
+              <MessageCircle size={18} fill="#fff" /> Contact Support on WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Reseller Dashboard (if isReseller is true)
   return (
     <div className="fade-up" style={{ maxWidth: 800, margin: "0 auto", paddingBottom: 40 }}>
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(0,212,170,.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-          <Award size={32} color="var(--primary)" />
-        </div>
-        <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 28, color: "var(--text)" }}>Become a Whitelabel Reseller</h2>
-        <p style={{ color: "var(--text-muted)", fontSize: 14, marginTop: 4 }}>Launch your custom branded VTU website and earn passive income!</p>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 26, color: "var(--text)" }}>Reseller Dashboard</h1>
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 4 }}>Manage your whitelabel brand and margins.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
-        {/* Why become a reseller? */}
+      <div style={{ display: "grid", gap: 24 }}>
+        {/* Margin Setter */}
         <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)" }}>
-          <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>🚀 Reseller Brand Features</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
-            {[
-              { t: "Custom Branding", d: "Your custom business name, logo, HSL color palette, and custom sub-domain/domain setup." },
-              { t: "Double-Wallet Ledger", d: "Prepaid automatic balance splits. Customers pay retail, and you pay wholesale, keeping 100% of the markups!" },
-              { t: "Automated VTU API Routing", d: "Zero server configurations. Purchases route instantly through active high-speed providers." },
-              { t: "Isolated Tenancy Security", d: "Full Row-Level Security (RLS). Resellers can only see transaction reports of their own users." }
-            ].map((f, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.02)", padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
-                <h4 style={{ color: "var(--primary)", fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{f.t}</h4>
-                <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.5 }}>{f.d}</p>
-              </div>
-            ))}
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>💰 Profit Margins</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Set the percentage markup you want to earn on transactions.</p>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>Airtime Margin (%)</label>
+              <input type="number" value={margins.airtime} onChange={(e) => setMargins({ ...margins, airtime: +e.target.value })} style={{ width: "100%", padding: 14, borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", outline: "none" }} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>Data Margin (%)</label>
+              <input type="number" value={margins.data} onChange={(e) => setMargins({ ...margins, data: +e.target.value })} style={{ width: "100%", padding: 14, borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", outline: "none" }} />
+            </div>
           </div>
+
+          <button onClick={handleSaveMargins} disabled={savingMargins} style={{ padding: "14px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#000", fontWeight: 700, cursor: savingMargins ? "not-allowed" : "pointer", alignSelf: "flex-start" }}>
+            {savingMargins ? "Saving..." : "Save Margins"}
+          </button>
         </div>
 
-        {/* Upgrade Activation */}
-        <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)", textAlign: "center" }}>
-          <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Ready to Activate?</h3>
-          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Upgrading is automated. Just copy your Profile UUID below and click the button to message our Admin Support on WhatsApp for provisioning!</p>
-
-          <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 20px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, maxWidth: 500, margin: "0 auto 24px", textAlign: "left" }}>
-            <div>
-              <span style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Your Profile User ID (UUID)</span>
-              <p style={{ fontSize: 13, color: "var(--text)", fontWeight: 700, fontFamily: "monospace", marginTop: 4, wordBreak: "break-all" }}>{user.id}</p>
-            </div>
-            <button 
-              onClick={handleCopy}
-              style={{ padding: "8px 16px", borderRadius: 8, background: copied ? "rgba(16,185,129,0.15)" : "var(--primary)", border: "none", color: copied ? "#10b981" : "#000", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
-            >
-              {copied ? "Copied! ✓" : "Copy ID"}
+        {/* API Access */}
+        <div style={{ background: "var(--bg-card)", borderRadius: 20, padding: 24, border: "1px solid var(--border)" }}>
+          <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>🔑 API Access</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Use this key to authenticate your custom applications.</p>
+          
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <input type="text" value={apiKey} readOnly placeholder="No API Key generated yet" style={{ flex: 1, padding: 14, borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", outline: "none", fontFamily: "monospace" }} />
+            <button onClick={handleGenerateApiKey} disabled={generatingKey} style={{ padding: "14px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,var(--primary),var(--primary-hover))", color: "#000", fontWeight: 700, cursor: generatingKey ? "not-allowed" : "pointer" }}>
+              {generatingKey ? "Generating..." : apiKey ? "Regenerate Key" : "Generate Key"}
             </button>
           </div>
-
-          <a 
-            href={whatsappUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#25D366", color: "#fff", padding: "14px 28px", borderRadius: 12, fontWeight: 700, textDecoration: "none", fontSize: 14, boxShadow: "0 8px 24px rgba(37,211,102,.3)" }}
-          >
-            <MessageCircle size={18} fill="#fff" /> Contact Support on WhatsApp
-          </a>
         </div>
       </div>
     </div>

@@ -9,6 +9,8 @@ export interface TenantConfig {
   primaryColor: string;
   parentId: string | null;
   isActive: boolean;
+  airtimeMargin?: number;
+  dataMargin?: number;
 }
 
 // Memory cache to prevent querying Supabase on every serverless function invocation
@@ -78,6 +80,8 @@ export async function resolveTenant(host: string): Promise<TenantConfig | null> 
         primaryColor: tenantData.primary_color,
         parentId: tenantData.parent_id,
         isActive: tenantData.is_active,
+        airtimeMargin: tenantData.airtime_margin,
+        dataMargin: tenantData.data_margin,
       };
       
       tenantCache.set(cleanHost, { data: config, expires: Date.now() + CACHE_TTL_MS });

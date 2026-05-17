@@ -33,25 +33,44 @@ export async function POST(req: NextRequest) {
     const { user_id, network, phone, plan_id, plan_name, amount } = parsed.data;
 
     // 1. Resolve Active Reseller Tenant
-    const host = req.headers.get("x-tenant-host") || req.headers.get("host") || "";
-    const tenant = await resolveTenant(host);
+    const apiKeyHeader = req.headers.get("x-api-key");
+    let tenant = null;
+
+    if (apiKeyHeader) {
+      const { data } = await supabase
+        .from("tenants")
+        .select("*")
+        .eq("api_key", apiKeyHeader)
+        .maybeSingle();
+      
+      if (!data) {
+        return NextResponse.json({ error: "Invalid API Key" }, { status: 401 });
+      }
+      tenant = {
+        id: data.id,
+        name: data.name,
+        subdomain: data.subdomain,
+        customDomain: data.custom_domain,
+        logoUrl: data.logo_url,
+        primaryColor: data.primary_color,
+        parentId: data.parent_id,
+        isActive: data.is_active,
+        airtimeMargin: data.airtime_margin,
+        dataMargin: data.data_margin,
+      };
+    } else {
+      const host = req.headers.get("x-tenant-host") || req.headers.get("host") || "";
+      tenant = await resolveTenant(host);
+    }
 
     let retailPrice = amount;
     let wholesalePrice = amount;
 
-    // If running under a reseller whitelabel, resolve pricing overrides
+    // If running under a reseller whitelabel, apply margins
     if (tenant) {
-      const { data: pricing } = await supabase
-        .from("tenant_pricing")
-        .select("retail_price, wholesale_price")
-        .eq("tenant_id", tenant.id)
-        .eq("service_name", plan_id)
-        .maybeSingle();
-
-      if (pricing) {
-        retailPrice = Number(pricing.retail_price);
-        wholesalePrice = Number(pricing.wholesale_price);
-      }
+      const dataMargin = tenant.dataMargin || 0;
+      retailPrice = amount * (1 + dataMargin / 100);
+      wholesalePrice = amount; // Reseller pays base amount
     }
 
     // 2. Check End-User Wallet Balance
