@@ -125,7 +125,7 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
 
     try {
       if (mode === "register") {
-        const { data, error } = await supabase.auth.signUp({
+        const signUpRes = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
           options: {
@@ -136,15 +136,18 @@ export default function AuthScreen({ isMobile }: { isMobile: boolean }) {
             }
           }
         });
-        if (error) throw error;
-        if (data.user) setMode("success");
+        if (signUpRes.error) throw signUpRes.error;
+        if (signUpRes.data.user) setMode("success");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        sessionStorage.setItem("justLoggedIn", "true");
+        const signInRes = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         });
-        if (error) throw error;
-        sessionStorage.setItem("justLoggedIn", "true");
+        if (signInRes.error) {
+          sessionStorage.removeItem("justLoggedIn");
+          throw signInRes.error;
+        }
       }
     } catch (err: any) {
       setAuthError(err.message || "Authentication failed.");

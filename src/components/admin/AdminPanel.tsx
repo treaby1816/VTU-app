@@ -8,13 +8,95 @@ import TxTable from "../transactions/TxTable";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
-  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity" | "providers">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "transactions" | "pricing" | "activity" | "providers" | "resellers">("overview");
   const [providerStats, setProviderStats] = useState<any[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalBalance: 0, totalTx: 0, totalInflow: 0, totalOutflow: 0 });
   const [loading, setLoading] = useState(true);
+
+  // Resellers Management State
+  const [resellers, setResellers] = useState<any[]>([]);
+  const [loadingResellers, setLoadingResellers] = useState(false);
+  const [creatingReseller, setCreatingReseller] = useState(false);
+  const [resellerForm, setResellerForm] = useState({
+    name: "",
+    subdomain: "",
+    custom_domain: "",
+    logo_url: "",
+    primary_color: "#00D4AA",
+    parent_id: ""
+  });
+  const [resellerMsg, setResellerMsg] = useState("");
+
+  const fetchResellers = async () => {
+    setLoadingResellers(true);
+    try {
+      const { data, error } = await supabase
+        .from("tenants")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data) setResellers(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingResellers(false);
+    }
+  };
+
+  const handleCreateReseller = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resellerForm.name || !resellerForm.subdomain || !resellerForm.parent_id) {
+      setResellerMsg("❌ Error: Brand Name, Subdomain, and Owner ID are required!");
+      return;
+    }
+    setCreatingReseller(true);
+    setResellerMsg("");
+    try {
+      const { error } = await supabase
+        .from("tenants")
+        .insert({
+          name: resellerForm.name,
+          subdomain: resellerForm.subdomain.toLowerCase().trim(),
+          custom_domain: resellerForm.custom_domain ? resellerForm.custom_domain.toLowerCase().trim() : null,
+          logo_url: resellerForm.logo_url || null,
+          primary_color: resellerForm.primary_color,
+          parent_id: resellerForm.parent_id.trim(),
+          is_active: true
+        });
+
+      if (error) throw error;
+
+      setResellerMsg("✅ Reseller brand created successfully!");
+      setResellerForm({
+        name: "",
+        subdomain: "",
+        custom_domain: "",
+        logo_url: "",
+        primary_color: "#00D4AA",
+        parent_id: ""
+      });
+      fetchResellers();
+    } catch (err: any) {
+      setResellerMsg(`❌ Error: ${err.message || "Failed to create reseller."}`);
+    } finally {
+      setCreatingReseller(false);
+    }
+  };
+
+  const toggleResellerActive = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("tenants")
+        .update({ is_active: !currentStatus })
+        .eq("id", id);
+      if (error) throw error;
+      fetchResellers();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Fafotech live plans state
   const [fafoPlans, setFafoPlans] = useState<any[]>([]);
@@ -91,6 +173,9 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
         })
         .finally(() => setLoadingProviders(false));
     }
+    if (tab === "resellers") {
+      fetchResellers();
+    }
   }, [tab]);
 
   if (loading) {
@@ -130,7 +215,7 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 18, background: "var(--bg)", padding: 4, borderRadius: 12, width: "fit-content", overflowX: "auto", maxWidth: "100%" }}>
-        {(["overview", "users", "transactions", "activity", "pricing", "providers"] as const).map(t => (
+        {(["overview", "users", "transactions", "activity", "pricing", "providers", "resellers"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === t ? "var(--bg-card)" : "transparent", color: tab === t ? "var(--primary)" : "var(--text-muted)", fontWeight: 600, fontSize: 13, textTransform: "capitalize", whiteSpace: "nowrap" }}>{t}</button>
         ))}
       </div>
@@ -437,6 +522,158 @@ export default function AdminPanel({ isMobile }: { isMobile: boolean }) {
                })}
              </div>
           )}
+        </div>
+      )}
+
+      {tab === "resellers" && (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 20 }}>
+          {/* Resellers list */}
+          <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", padding: 20 }}>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, marginBottom: 6 }}>Active Resellers</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 20 }}>Browse all active whitelabel reseller networks and their mapped domains.</p>
+            
+            {loadingResellers ? (
+              <p style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", padding: 40 }}>Loading resellers...</p>
+            ) : resellers.length === 0 ? (
+              <p style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", padding: 40 }}>No resellers onboarded yet. Use the form on the right to add one!</p>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                      {["Reseller Brand", "Domain / Subdomain", "Primary Color", "Status", "Actions"].map(h => (
+                        <th key={h} style={{ padding: "12px 10px", textAlign: "left", color: "var(--text-muted)", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {resellers.map(r => (
+                      <tr key={r.id} style={{ borderBottom: "1px solid var(--border)", opacity: r.is_active ? 1 : 0.6 }}>
+                        <td style={{ padding: "12px 10px" }}>
+                          <div>
+                            <span style={{ color: "var(--text)", fontSize: 13, fontWeight: 700 }}>{r.name}</span>
+                            <p style={{ color: "var(--text-muted)", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>Owner ID: {r.parent_id}</p>
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px 10px" }}>
+                          <div>
+                            <span style={{ color: "var(--primary)", fontSize: 13, fontWeight: 600 }}>{r.subdomain}.vaultpay.com</span>
+                            {r.custom_domain && (
+                              <p style={{ color: "var(--text-muted)", fontSize: 11, marginTop: 2 }}>{r.custom_domain}</p>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px 10px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 14, height: 14, borderRadius: "50%", background: r.primary_color, border: "1px solid rgba(255,255,255,0.1)" }} />
+                            <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "monospace" }}>{r.primary_color}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px 10px" }}>
+                          <span style={{ padding: "3px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: r.is_active ? "rgba(16,185,129,0.15)" : "rgba(244,63,94,0.15)", color: r.is_active ? "#10b981" : "#f43f5e" }}>
+                            {r.is_active ? "Active" : "Disabled"}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 10px" }}>
+                          <button 
+                            onClick={() => toggleResellerActive(r.id, r.is_active)}
+                            style={{ padding: "4px 8px", borderRadius: 6, background: r.is_active ? "rgba(244,63,94,0.1)" : "rgba(16,185,129,0.1)", border: "none", color: r.is_active ? "#f43f5e" : "#10b981", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                          >
+                            {r.is_active ? "Disable" : "Enable"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Onboarding Form */}
+          <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border)", padding: 20, height: "fit-content" }}>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 17, marginBottom: 4 }}>Onboard Brand</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: 12, marginBottom: 16 }}>Provision a new reseller tenant in the multi-tenant registry.</p>
+            
+            <form onSubmit={handleCreateReseller} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>Brand Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. MobiPay" 
+                  value={resellerForm.name}
+                  onChange={(e) => setResellerForm(p => ({ ...p, name: e.target.value }))}
+                  style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", color: "var(--text)", fontSize: 13 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>Subdomain Prefix</label>
+                <div style={{ display: "flex", alignItems: "center", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+                  <input 
+                    type="text" 
+                    placeholder="mobipay" 
+                    value={resellerForm.subdomain}
+                    onChange={(e) => setResellerForm(p => ({ ...p, subdomain: e.target.value }))}
+                    style={{ flex: 1, background: "transparent", border: "none", padding: "8px 12px", color: "var(--text)", fontSize: 13, outline: "none" }}
+                  />
+                  <span style={{ fontSize: 12, color: "var(--text-muted)", paddingRight: 12 }}>.vaultpay.com</span>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>Custom Domain (Optional)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. vtu.mobipay.com" 
+                  value={resellerForm.custom_domain}
+                  onChange={(e) => setResellerForm(p => ({ ...p, custom_domain: e.target.value }))}
+                  style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", color: "var(--text)", fontSize: 13 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>Brand Primary Color</label>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <input 
+                    type="color" 
+                    value={resellerForm.primary_color}
+                    onChange={(e) => setResellerForm(p => ({ ...p, primary_color: e.target.value }))}
+                    style={{ width: 40, height: 32, border: "none", background: "none", cursor: "pointer" }}
+                  />
+                  <input 
+                    type="text" 
+                    value={resellerForm.primary_color}
+                    onChange={(e) => setResellerForm(p => ({ ...p, primary_color: e.target.value }))}
+                    style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", color: "var(--text)", fontSize: 13, fontFamily: "monospace" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>Owner User UUID (Parent ID)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. d290f1ee-6c54-4b01-90e6..." 
+                  value={resellerForm.parent_id}
+                  onChange={(e) => setResellerForm(p => ({ ...p, parent_id: e.target.value }))}
+                  style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", color: "var(--text)", fontSize: 13 }}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={creatingReseller}
+                style={{ width: "100%", padding: 12, borderRadius: 8, border: "none", background: "var(--primary)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: creatingReseller ? "not-allowed" : "pointer", marginTop: 10 }}
+              >
+                {creatingReseller ? "Provisioning..." : "Onboard Reseller"}
+              </button>
+
+              {resellerMsg && (
+                <p style={{ fontSize: 12, textAlign: "center", marginTop: 6, fontWeight: 600, color: resellerMsg.startsWith("❌") ? "#ff4444" : "var(--primary)" }}>{resellerMsg}</p>
+              )}
+            </form>
+          </div>
         </div>
       )}
     </div>

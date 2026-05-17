@@ -160,23 +160,28 @@ export default function VaultPay() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }: any) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-          isAdmin: true // FORCED TRUE FOR TESTING
+        supabase.from("profiles").select("is_admin").eq("id", session.user.id).single().then(({ data }: any) => {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
+            isAdmin: data?.is_admin || false
+          });
         });
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (session?.user) {
-        const userData = {
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
-          isAdmin: true // FORCED TRUE FOR TESTING
-        };
+        supabase.from("profiles").select("is_admin").eq("id", session.user.id).single().then(({ data }: any) => {
+          const userData = {
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.user_metadata.full_name || session.user.email?.split("@")[0],
+            isAdmin: data?.is_admin || false
+          };
+          setUser(userData);
+        });
         
         // Only show welcome overlay if this is a manual user-initiated sign in
         const justLoggedIn = sessionStorage.getItem('justLoggedIn');
@@ -184,8 +189,6 @@ export default function VaultPay() {
           setShowWelcome(true);
           sessionStorage.removeItem('justLoggedIn');
         }
-        
-        setUser(userData);
       } else {
         setUser(null);
         setShowWelcome(false);

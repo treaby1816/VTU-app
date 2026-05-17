@@ -128,7 +128,7 @@ const CosmicNebulaMastercard: React.FC<CosmicNebulaMastercardProps> = ({
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="card-body relative w-full h-full rounded-[24px] cursor-pointer transition-all duration-500 ease-out preserve-3d"
+        className="card-body relative w-full h-full rounded-[24px] cursor-pointer transition-shadow duration-500 ease-out preserve-3d"
         style={{
           background: "#050A18",
           border: "1px solid rgba(255,255,255,0.1)",
